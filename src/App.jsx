@@ -224,9 +224,9 @@ export default function LaCelesteApp() {
         setDistanciaInfo({ km: km.toFixed(1), faixa });
         if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
       } else {
-        setErroEnd("Endereço não encontrado. Verifique e tente novamente.");
+        setErroEnd("Endereço não encontrado. Verifique o endereço e tente novamente.");
       }
-    } catch(e) { setErroEnd("Erro ao calcular distância."); }
+    } catch(e) { setErroEnd("Erro ao calcular distância. Verifique sua conexão."); }
     setCalculando(false);
   }
 
@@ -275,7 +275,7 @@ export default function LaCelesteApp() {
       msg += "📍 Av. Juscelino Kubitschek, 4165 — Pelotas\n";
     } else {
       msg += "🚗 *Entrega*\n";
-      msg += "📍 *Endereço:* " + endereco + ", " + endNumero;
+      msg += "📍 *Endereço:* " + endereco;
       if (complemento) msg += " — " + complemento;
       msg += "\n";
       if (distanciaInfo) {
@@ -299,7 +299,7 @@ export default function LaCelesteApp() {
       total, tipoEntrega,
     }, ...prev]);
     setCart([]); setClienteNome(""); setClienteTel(""); setTipoEntrega(null);
-    setEndereco(""); setEndNumero(""); setComplemento(""); setDistanciaInfo(null);
+    setEndereco(""); setComplemento(""); setDistanciaInfo(null);
     setObs(""); setPagamento(null); setTroco(""); setShowCart(false); setStep(1);
     showToast("Pedido enviado via WhatsApp! 🎉");
   }
@@ -325,9 +325,9 @@ export default function LaCelesteApp() {
   const active = orders.filter(o => o.status !== "entregue");
   const done   = orders.filter(o => o.status === "entregue");
 
-  const enderecoComNumero = endereco.trim() && endNumero.trim() && /\d/.test(endNumero);
+  const enderecoValido = endereco.trim().length > 5 && /\d/.test(endereco);
   const canStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
-  const canStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && enderecoComNumero && distanciaInfo && distanciaInfo.faixa.taxa !== null);
+  const canStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && enderecoValido && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canStep3 = !!pagamento;
 
   return (
@@ -642,11 +642,11 @@ export default function LaCelesteApp() {
 
                   <div style={{marginBottom:10,position:"relative"}}>
                     <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>
-                      Rua / Avenida<span className="obrigatorio">*</span>
+                      Endereço completo<span className="obrigatorio">*</span>
                     </label>
                     <input
                       className="input"
-                      placeholder="Ex: Rua Andrade Neves"
+                      placeholder="Ex: Rua Dom Joaquim, 123"
                       value={endereco}
                       onChange={e=>handleEnderecoInput(e.target.value)}
                       onBlur={e=>{ if(!distanciaInfo && e.target.value.length>4) geocodeManual(e.target.value); }}
@@ -661,28 +661,22 @@ export default function LaCelesteApp() {
                         ))}
                       </div>
                     )}
+                    <div style={{fontSize:11,color:"#7a9ab5",marginTop:4}}>Inclua o número. Ex: Rua das Flores, 321</div>
                   </div>
 
-                  <div style={{display:"flex",gap:10,marginBottom:10}}>
-                    <div style={{flex:1}}>
-                      <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>
-                        Número<span className="obrigatorio">*</span>
-                      </label>
-                      <input
-                        className={"input"+(endNumero&&!/\d/.test(endNumero)?" error":"")}
-                        placeholder="Ex: 123"
-                        value={endNumero}
-                        onChange={e=>setEndNumero(e.target.value)}
-                        onBlur={()=>{ if(endereco && endNumero && /\d/.test(endNumero) && !distanciaInfo) geocodeManual(endereco + ", " + endNumero); }}
-                        inputMode="numeric"
-                      />
-                      {endNumero&&!/\d/.test(endNumero)&&<div className="field-error">Informe o número</div>}
-                    </div>
-                    <div style={{flex:1}}>
-                      <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>Complemento</label>
-                      <input className="input" placeholder="Apto, casa... (opcional)" value={complemento} onChange={e=>setComplemento(e.target.value)} />
-                    </div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>Complemento <span style={{fontWeight:400}}>(opcional)</span></label>
+                    <input className="input" placeholder="Apto, casa, bloco..." value={complemento} onChange={e=>setComplemento(e.target.value)} />
                   </div>
+
+                  {!distanciaInfo && !calculando && endereco.length > 4 && (
+                    <button
+                      style={{width:"100%",background:"#e8f2fb",border:"1.5px solid #c5dff0",borderRadius:10,padding:"10px",fontSize:13,fontWeight:700,color:"#4a90c4",marginBottom:8}}
+                      onClick={()=>geocodeManual(endereco)}
+                    >
+                      🔍 Calcular frete para este endereço
+                    </button>
+                  )}
 
                   {calculando&&<div className="frete-loading"><div className="spinner"/> Calculando distância...</div>}
 
