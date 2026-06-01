@@ -209,6 +209,27 @@ export default function LaCelesteApp() {
     }, 400);
   }
 
+  async function geocodeManual(endStr) {
+    if (!endStr || endStr.length < 5) return;
+    setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
+    try {
+      const query = encodeURIComponent(endStr + ", Pelotas, RS, Brasil");
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${GOOGLE_MAPS_API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === "OK" && data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
+        const faixa = calcularFrete(km);
+        setDistanciaInfo({ km: km.toFixed(1), faixa });
+        if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
+      } else {
+        setErroEnd("Endereço não encontrado. Verifique e tente novamente.");
+      }
+    } catch(e) { setErroEnd("Erro ao calcular distância."); }
+    setCalculando(false);
+  }
+
   async function selecionarSugestao(sugestao) {
     setSugestoes([]);
     const descricao = sugestao.structured_formatting?.main_text || sugestao.description;
@@ -247,7 +268,7 @@ export default function LaCelesteApp() {
     msg += "👤 *Cliente:* " + clienteNome + "\n";
     msg += "📱 *WhatsApp:* " + clienteTel + "\n";
     msg += "\n🍕 *Itens:*\n";
-    cart.forEach(c => { msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + " — " + fmt(c.item.preco * c.qty) + "\n"; });
+    cart.forEach(c => { const isCongelada = c.item.id >= 14 && c.item.id <= 23; msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + (isCongelada ? " ❄️ CONGELADA" : "") + " — " + fmt(c.item.preco * c.qty) + "\n"; });
     msg += "\n💰 *Subtotal:* " + fmt(subtotal) + "\n";
     if (isRetirada) {
       msg += "🏠 *Retirada no restaurante*\n";
@@ -628,6 +649,7 @@ export default function LaCelesteApp() {
                       placeholder="Ex: Rua Andrade Neves"
                       value={endereco}
                       onChange={e=>handleEnderecoInput(e.target.value)}
+                      onBlur={e=>{ if(!distanciaInfo && e.target.value.length>4) geocodeManual(e.target.value); }}
                       autoComplete="off"
                     />
                     {sugestoes.length>0&&(
@@ -651,6 +673,7 @@ export default function LaCelesteApp() {
                         placeholder="Ex: 123"
                         value={endNumero}
                         onChange={e=>setEndNumero(e.target.value)}
+                        onBlur={()=>{ if(endereco && endNumero && /\d/.test(endNumero) && !distanciaInfo) geocodeManual(endereco + ", " + endNumero); }}
                         inputMode="numeric"
                       />
                       {endNumero&&!/\d/.test(endNumero)&&<div className="field-error">Informe o número</div>}
