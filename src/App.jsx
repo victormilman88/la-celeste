@@ -112,8 +112,8 @@ const STATUS_CONFIG = {
 
 let nextId = 1;
 
-// Uses Google Places Autocomplete REST API (no JS SDK needed)
-const PROXY = `https://maps.googleapis.com/maps/api`;
+// Uses Vercel serverless proxy to avoid CORS
+const PROXY = `/api/places`;
 
 export default function LaCelesteApp() {
   const [view, setView]           = useState("cardapio");
@@ -172,7 +172,7 @@ export default function LaCelesteApp() {
     debounceRef.current = setTimeout(async () => {
       try {
         const input = encodeURIComponent(val + " Pelotas RS Brasil");
-        const url = `${PROXY}/place/autocomplete/json?input=${input}&components=country:br&types=address&key=${GOOGLE_MAPS_API_KEY}`;
+        const url = `${PROXY}?input=${input}`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.status === "OK" && data.predictions) {
@@ -192,7 +192,7 @@ export default function LaCelesteApp() {
     const label = (s.structured_formatting?.main_text || s.description);
     setEndereco(s.description);
     try {
-      const url = `${PROXY}/geocode/json?place_id=${s.place_id}&key=${GOOGLE_MAPS_API_KEY}`;
+      const url = `${PROXY}?place_id=${s.place_id}`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.status === "OK" && data.results.length > 0) {
@@ -214,7 +214,7 @@ export default function LaCelesteApp() {
     setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
     try {
       const query = encodeURIComponent(endStr + ", Pelotas, RS, Brasil");
-      const url = `${PROXY}/geocode/json?address=${query}&key=${GOOGLE_MAPS_API_KEY}`;
+      const url = `${PROXY}?input=${query}`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.status === "OK" && data.results.length > 0) {
