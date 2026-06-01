@@ -142,7 +142,7 @@ export default function LaCelesteApp() {
   const [clienteTel, setClienteTel]   = useState("");
   const [tipoEntrega, setTipoEntrega] = useState(null);
   const [endereco, setEndereco]       = useState("");
-  const [endNumero, setEndNumero]     = useState("");
+
   const [complemento, setComplemento] = useState("");
   const [sugestoes, setSugestoes]     = useState([]);
   const [distanciaInfo, setDistanciaInfo] = useState(null);
@@ -696,8 +696,8 @@ export default function LaCelesteApp() {
                     </div>
                   )}
 
-                  {!enderecoComNumero&&endereco&&!endNumero&&(
-                    <div style={{fontSize:12,color:"#e63946",marginTop:6,fontWeight:700}}>Informe o número do endereço para continuar</div>
+                  {!enderecoValido&&endereco&&(
+                    <div style={{fontSize:12,color:"#e63946",marginTop:6,fontWeight:700}}>Inclua o número no endereço para continuar</div>
                   )}
 
                   <details style={{marginTop:14}}>
