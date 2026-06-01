@@ -42,7 +42,7 @@ const MENU = {
     { id: 5,  nome: "Alcatra c/ gorgonzola",     desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 39 },
     { id: 6,  nome: "4 Queijos c/ alcatra",      desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 39 },
     { id: 7,  nome: "Vazio c/ cebola caramelizada", desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 39 },
-    { id: 8,  nome: "Entrecot c/ chimichurri",   desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 42 },
+    { id: 8,  nome: "Entrecot c/ chimichurri",   desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 39 },
     { id: 9,  nome: "Mussarela c/ pesto uruguaio", desc: "Molho de tomate, mussarela e pesto uruguaio", preco: 34 },
     { id: 10, nome: "Presunto parma c/ geleia de figo", desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48 },
   ],
@@ -190,8 +190,6 @@ export default function LaCelesteApp() {
     setErroEnd("");
     setDistanciaInfo(null);
     setEndereco(s.description);
-    // Check if address has a number
-    const temNumero = /\d/.test(s.structured_formatting?.main_text || s.description);
     try {
       const url = `${PROXY}?place_id=${s.place_id}`;
       const res = await fetch(url);
@@ -200,7 +198,10 @@ export default function LaCelesteApp() {
         const { lat, lng } = data.results[0].geometry.location;
         const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
         const faixa = calcularFrete(km);
-        setEndereco(data.results[0].formatted_address || s.description);
+        const endFormatado = data.results[0].formatted_address || s.description;
+        // Check number in full address or original description
+        const temNumero = /\d/.test(endFormatado) || /\d/.test(s.description);
+        setEndereco(endFormatado);
         setDistanciaInfo({ km: km.toFixed(1), faixa, lat, lng, temNumero });
         if (!temNumero) setErroEnd("Adicione o número do endereço para continuar.");
         else if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
