@@ -154,14 +154,20 @@ export default function LaCelesteApp() {
   const [manualForm, setManualForm]   = useState({ nome: "", mesa: "", itens: "", obs: "" });
 
   const autocompleteService = useRef(null);
+  const placesService = useRef(null);
   const debounceRef = useRef(null);
   const sessionToken = useRef(null);
+  const mapDivRef = useRef(null);
 
   useEffect(() => {
     loadGoogleMaps(GOOGLE_MAPS_API_KEY).then(() => {
       if (window.google?.maps?.places) {
         autocompleteService.current = new window.google.maps.places.AutocompleteService();
         sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+        // PlacesService precisa de um elemento DOM
+        const div = document.createElement('div');
+        mapDivRef.current = div;
+        placesService.current = new window.google.maps.places.PlacesService(div);
       }
     }).catch(() => {});
   }, []);
@@ -186,27 +192,76 @@ export default function LaCelesteApp() {
   const total = subtotal + taxaEntrega;
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
 
-  // Autocomplete de endereço
+  // Autocomplete — só mostra sugestões, não permite digitar livremente
   function handleEnderecoInput(val) {
     setEndereco(val);
     setDistanciaInfo(null);
     setErroEnd("");
     clearTimeout(debounceRef.current);
-    if (!val || val.length < 4) { setSugestoes([]); return; }
+    if (!val || val.length < 3) { setSugestoes([]); return; }
     debounceRef.current = setTimeout(() => {
       if (!autocompleteService.current) return;
       autocompleteService.current.getPlacePredictions({
-        input: val + ", Pelotas, RS",
+        input: val + " Pelotas RS",
         componentRestrictions: { country: "br" },
+        types: ["address"],
         sessionToken: sessionToken.current,
       }, (predictions, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          setSugestoes(predictions.slice(0, 5));
+          setSugestoes(predictions.slice(0, 6));
         } else {
           setSugestoes([]);
         }
       });
-    }, 400);
+    }, 350);
+  }
+
+  async function selecionarSugestao(sugestao) {
+    setSugestoes([]);
+    setCalculando(true);
+    setErroEnd("");
+    setDistanciaInfo(null);
+
+    // Pega detalhes completos do lugar incluindo coordenadas
+    if (placesService.current) {
+      placesService.current.getDetails(
+        { placeId: sugestao.place_id, fields: ["geometry", "formatted_address"], sessionToken: sessionToken.current },
+        (place, status) => {
+          sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
+            const faixa = calcularFrete(km);
+            setEndereco(place.formatted_address || sugestao.description);
+            setDistanciaInfo({ km: km.toFixed(1), faixa });
+            if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
+          } else {
+            setErroEnd("Não foi possível obter o endereço. Tente novamente.");
+          }
+          setCalculando(false);
+        }
+      );
+    } else {
+      // fallback geocoding
+      try {
+        const query = encodeURIComponent(sugestao.description);
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${sugestao.place_id}&key=${GOOGLE_MAPS_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status === "OK" && data.results.length > 0) {
+          const { lat, lng } = data.results[0].geometry.location;
+          const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
+          const faixa = calcularFrete(km);
+          setEndereco(data.results[0].formatted_address || sugestao.description);
+          setDistanciaInfo({ km: km.toFixed(1), faixa });
+          if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
+        } else {
+          setErroEnd("Endereço não encontrado. Tente novamente.");
+        }
+      } catch(e) { setErroEnd("Erro ao calcular distância."); }
+      setCalculando(false);
+    }
   }
 
   async function geocodeManual(endStr) {
@@ -325,9 +380,9 @@ export default function LaCelesteApp() {
   const active = orders.filter(o => o.status !== "entregue");
   const done   = orders.filter(o => o.status === "entregue");
 
-  const enderecoValido = endereco.trim().length > 5 && /\d/.test(endereco);
+  const enderecoValido = !!distanciaInfo && distanciaInfo.faixa.taxa !== null;
   const canStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
-  const canStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && enderecoValido && distanciaInfo && distanciaInfo.faixa.taxa !== null);
+  const canStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && enderecoValido);
   const canStep3 = !!pagamento;
 
   return (
@@ -640,65 +695,55 @@ export default function LaCelesteApp() {
                 <div className="section-card" style={{marginTop:12}}>
                   <div className="section-label">Endereço de entrega</div>
 
-                  <div style={{marginBottom:10,position:"relative"}}>
-                    <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>
-                      Endereço completo<span className="obrigatorio">*</span>
-                    </label>
-                    <input
-                      className="input"
-                      placeholder="Ex: Rua Dom Joaquim, 123"
-                      value={endereco}
-                      onChange={e=>handleEnderecoInput(e.target.value)}
-                      onBlur={e=>{ if(!distanciaInfo && e.target.value.length>4) geocodeManual(e.target.value); }}
-                      autoComplete="off"
-                    />
-                    {sugestoes.length>0&&(
-                      <div className="sugestoes">
-                        {sugestoes.map(s=>(
-                          <div key={s.place_id} className="sugestao-item" onClick={()=>selecionarSugestao(s)}>
-                            📍 {s.description}
-                          </div>
-                        ))}
+                  {/* Endereço confirmado */}
+                  {distanciaInfo && !calculando ? (
+                    <div style={{marginBottom:10}}>
+                      <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>Endereço selecionado</label>
+                      <div style={{background:"#d1fae5",border:"1.5px solid #6ee7b7",borderRadius:10,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
+                          <div style={{fontSize:12,color:"#047857",marginTop:2}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
+                        </div>
+                        <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,background:"none",border:"none",cursor:"pointer",flexShrink:0,marginLeft:8}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setErroEnd("");setSugestoes([]);}}>
+                          Trocar
+                        </button>
                       </div>
-                    )}
-                    <div style={{fontSize:11,color:"#7a9ab5",marginTop:4}}>Inclua o número. Ex: Rua das Flores, 321</div>
-                  </div>
+                    </div>
+                  ) : (
+                    <div style={{marginBottom:10,position:"relative"}}>
+                      <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>
+                        Buscar endereço<span className="obrigatorio">*</span>
+                      </label>
+                      <input
+                        className="input"
+                        placeholder="Digite sua rua e número..."
+                        value={endereco}
+                        onChange={e=>handleEnderecoInput(e.target.value)}
+                        autoComplete="off"
+                        disabled={calculando}
+                      />
+                      {calculando && <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)"}}><div className="spinner"/></div>}
+                      {sugestoes.length>0 && (
+                        <div className="sugestoes" style={{position:"absolute",width:"100%",zIndex:200,boxShadow:"0 4px 16px rgba(0,0,0,0.12)"}}>
+                          {sugestoes.map(s=>(
+                            <div key={s.place_id} className="sugestao-item" onClick={()=>selecionarSugestao(s)}>
+                              <div style={{fontWeight:600,fontSize:13}}>{s.structured_formatting?.main_text || s.description}</div>
+                              <div style={{fontSize:11,color:"#aaa"}}>{s.structured_formatting?.secondary_text || ""}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {!calculando && endereco.length > 3 && sugestoes.length === 0 && !distanciaInfo && (
+                        <div style={{fontSize:12,color:"#7a9ab5",marginTop:4}}>Continue digitando para ver sugestões de endereço...</div>
+                      )}
+                      {erroEnd && <div className="frete-err" style={{marginTop:8}}><div style={{fontSize:13,color:"#b91c1c",fontWeight:700}}>⚠️ {erroEnd}</div></div>}
+                    </div>
+                  )}
 
                   <div style={{marginBottom:10}}>
                     <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>Complemento <span style={{fontWeight:400}}>(opcional)</span></label>
                     <input className="input" placeholder="Apto, casa, bloco..." value={complemento} onChange={e=>setComplemento(e.target.value)} />
                   </div>
-
-                  {!distanciaInfo && !calculando && endereco.length > 4 && (
-                    <button
-                      style={{width:"100%",background:"#e8f2fb",border:"1.5px solid #c5dff0",borderRadius:10,padding:"10px",fontSize:13,fontWeight:700,color:"#4a90c4",marginBottom:8}}
-                      onClick={()=>geocodeManual(endereco)}
-                    >
-                      🔍 Calcular frete para este endereço
-                    </button>
-                  )}
-
-                  {calculando&&<div className="frete-loading"><div className="spinner"/> Calculando distância...</div>}
-
-                  {distanciaInfo&&!calculando&&distanciaInfo.faixa.taxa!==null&&(
-                    <div className="frete-ok">
-                      <div style={{fontWeight:800,fontSize:14,color:"#065f46",marginBottom:4}}>✓ Entrega disponível</div>
-                      <div style={{fontSize:13,color:"#047857"}}>
-                        📏 ~{distanciaInfo.km} km ({distanciaInfo.faixa.label})<br/>
-                        🚚 Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong>
-                      </div>
-                    </div>
-                  )}
-
-                  {(erroEnd&&!calculando)&&(
-                    <div className="frete-err">
-                      <div style={{fontWeight:800,fontSize:13,color:"#b91c1c"}}>⚠️ {erroEnd}</div>
-                    </div>
-                  )}
-
-                  {!enderecoValido&&endereco&&(
-                    <div style={{fontSize:12,color:"#e63946",marginTop:6,fontWeight:700}}>Inclua o número no endereço para continuar</div>
-                  )}
 
                   <details style={{marginTop:14}}>
                     <summary style={{fontSize:12,color:"#7a9ab5",cursor:"pointer",fontWeight:700}}>Ver tabela de frete</summary>
