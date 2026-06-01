@@ -33,16 +33,16 @@ function fmt(n) { return "R$ " + Number(n).toFixed(2).replace(".", ","); }
 
 const MENU = {
   classicas: [
-    { id: 1,  nome: "Marguerita",                desc: "Molho de tomate, mussarela, tomate cereja, pesto e manjericão", preco: 28 },
-    { id: 2,  nome: "Calabresa",                 desc: "Molho de tomate, mussarela, calabresa, catupiry e orégano", preco: 28 },
-    { id: 3,  nome: "Pepperoni",                 desc: "Molho de tomate, mussarela, pepperoni, catupiry e orégano", preco: 32 },
-    { id: 4,  nome: "5 Queijos",                 desc: "Molho de tomate, mussarela, provolone, gorgonzola, prato, cheddar e orégano", preco: 35 },
+    { id: 1,  nome: "Marguerita",                desc: "Molho de tomate, mussarela, tomate cereja, pesto e manjericão", preco: 35 },
+    { id: 2,  nome: "Calabresa",                 desc: "Molho de tomate, mussarela, calabresa, catupiry e orégano", preco: 35 },
+    { id: 3,  nome: "Pepperoni",                 desc: "Molho de tomate, mussarela, pepperoni, catupiry e orégano", preco: 36 },
+    { id: 4,  nome: "5 Queijos",                 desc: "Molho de tomate, mussarela, provolone, gorgonzola, prato, cheddar e orégano", preco: 39 },
   ],
   especiais: [
-    { id: 5,  nome: "Alcatra c/ gorgonzola",     desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 35 },
-    { id: 6,  nome: "4 Queijos c/ alcatra",      desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 35 },
-    { id: 7,  nome: "Vazio c/ cebola caramelizada", desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 35 },
-    { id: 8,  nome: "Entrecot c/ chimichurri",   desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 35 },
+    { id: 5,  nome: "Alcatra c/ gorgonzola",     desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 39 },
+    { id: 6,  nome: "4 Queijos c/ alcatra",      desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 39 },
+    { id: 7,  nome: "Vazio c/ cebola caramelizada", desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 39 },
+    { id: 8,  nome: "Entrecot c/ chimichurri",   desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 42 },
     { id: 9,  nome: "Mussarela c/ pesto uruguaio", desc: "Molho de tomate, mussarela e pesto uruguaio", preco: 34 },
     { id: 10, nome: "Presunto parma c/ geleia de figo", desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48 },
   ],
