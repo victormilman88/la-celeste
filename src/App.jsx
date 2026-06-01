@@ -132,7 +132,7 @@ export default function LaCelesteApp() {
   const [endereco, setEndereco]       = useState("");
   const [complemento, setComplemento] = useState("");
   const [sugestoes, setSugestoes]     = useState([]);
-  const [distanciaInfo, setDistanciaInfo] = useState(null);
+  const [distanciaInfo, setDistanciaInfo] = useState(null); // { km, faixa, lat, lng, temNumero }
   const [calculando, setCalculando]   = useState(false);
   const [erroEnd, setErroEnd]         = useState("");
   const [obs, setObs]                 = useState("");
@@ -189,8 +189,9 @@ export default function LaCelesteApp() {
     setCalculando(true);
     setErroEnd("");
     setDistanciaInfo(null);
-    const label = (s.structured_formatting?.main_text || s.description);
     setEndereco(s.description);
+    // Check if address has a number
+    const temNumero = /\d/.test(s.structured_formatting?.main_text || s.description);
     try {
       const url = `${PROXY}?place_id=${s.place_id}`;
       const res = await fetch(url);
@@ -200,8 +201,9 @@ export default function LaCelesteApp() {
         const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
         const faixa = calcularFrete(km);
         setEndereco(data.results[0].formatted_address || s.description);
-        setDistanciaInfo({ km: km.toFixed(1), faixa });
-        if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
+        setDistanciaInfo({ km: km.toFixed(1), faixa, lat, lng, temNumero });
+        if (!temNumero) setErroEnd("Adicione o número do endereço para continuar.");
+        else if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km). Entre em contato pelo WhatsApp.");
       } else {
         setErroEnd("Não foi possível confirmar o endereço. Tente outro.");
       }
@@ -325,7 +327,7 @@ export default function LaCelesteApp() {
   const active = orders.filter(o => o.status !== "entregue");
   const done   = orders.filter(o => o.status === "entregue");
 
-  const enderecoValido = !!distanciaInfo && distanciaInfo.faixa.taxa !== null;
+  const enderecoValido = !!distanciaInfo && distanciaInfo.faixa.taxa !== null && distanciaInfo.temNumero;
   const canStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
   const canStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && enderecoValido);
   const canStep3 = !!pagamento;
@@ -644,15 +646,42 @@ export default function LaCelesteApp() {
                   {distanciaInfo && !calculando ? (
                     <div style={{marginBottom:10}}>
                       <label style={{fontSize:12,fontWeight:700,color:"#7a9ab5",display:"block",marginBottom:4}}>Endereço selecionado</label>
-                      <div style={{background:"#d1fae5",border:"1.5px solid #6ee7b7",borderRadius:10,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <div>
-                          <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
-                          <div style={{fontSize:12,color:"#047857",marginTop:2}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
+
+                      {/* Mini mapa */}
+                      {distanciaInfo.lat && distanciaInfo.lng && (
+                        <div style={{borderRadius:12,overflow:"hidden",marginBottom:8,border:"1.5px solid #daeaf7"}}>
+                          <img
+                            src={`https://maps.googleapis.com/maps/api/staticmap?center=${distanciaInfo.lat},${distanciaInfo.lng}&zoom=16&size=600x200&scale=2&markers=color:red%7C${distanciaInfo.lat},${distanciaInfo.lng}&key=${GOOGLE_MAPS_API_KEY}`}
+                            alt="Mapa do endereço"
+                            style={{width:"100%",display:"block"}}
+                          />
                         </div>
-                        <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,background:"none",border:"none",cursor:"pointer",flexShrink:0,marginLeft:8}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setErroEnd("");setSugestoes([]);}}>
-                          Trocar
-                        </button>
-                      </div>
+                      )}
+
+                      {distanciaInfo.temNumero && distanciaInfo.faixa.taxa !== null ? (
+                        <div style={{background:"#d1fae5",border:"1.5px solid #6ee7b7",borderRadius:10,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
+                            <div style={{fontSize:12,color:"#047857",marginTop:2}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
+                          </div>
+                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,background:"none",border:"none",cursor:"pointer",flexShrink:0,marginLeft:8}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setErroEnd("");setSugestoes([]);}}>
+                            Trocar
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{background:"#fef3c7",border:"1.5px solid #fcd34d",borderRadius:10,padding:"12px 14px"}}>
+                          <div style={{fontSize:13,fontWeight:700,color:"#92400e",marginBottom:6}}>📍 {endereco}</div>
+                          {!distanciaInfo.temNumero && (
+                            <div style={{fontSize:12,color:"#b45309",fontWeight:700,marginBottom:8}}>⚠️ Endereço sem número — adicione o número para continuar</div>
+                          )}
+                          {distanciaInfo.faixa.taxa === null && (
+                            <div style={{fontSize:12,color:"#b91c1c",fontWeight:700,marginBottom:8}}>⚠️ Fora da área de entrega (acima de 13 km)</div>
+                          )}
+                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,background:"none",border:"none",cursor:"pointer"}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setErroEnd("");setSugestoes([]);}}>
+                            ← Buscar outro endereço
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div style={{marginBottom:10,position:"relative"}}>
