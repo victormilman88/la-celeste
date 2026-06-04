@@ -132,6 +132,8 @@ export default function LaCelesteApp() {
   const [obs, setObs] = useState("");
   const [pagamento, setPagamento] = useState(null);
   const [troco, setTroco] = useState("");
+  const [ruaSelecionada, setRuaSelecionada] = useState(null); // { placeId, descricao, mainText }
+  const [endNumero, setEndNumero] = useState("");
 
   // Local order
   const [localNome, setLocalNome] = useState("");
@@ -187,28 +189,31 @@ export default function LaCelesteApp() {
     }, 400);
   }
 
-  async function selecionarSugestao(s) {
-    setSugestoes([]); setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
-    setEndereco(s.description);
+  // Step 1: user selects street from autocomplete
+  function selecionarRua(s) {
+    setSugestoes([]);
+    setRuaSelecionada({ placeId: s.place_id, descricao: s.description, mainText: s.structured_formatting?.main_text || s.description });
+    setEndereco(s.structured_formatting?.main_text || s.description);
+    setEndNumero("");
+    setDistanciaInfo(null);
+    setErroEnd("");
+  }
+
+  // Step 2: user confirms street + number → geocode + distance
+  async function confirmarEndereco() {
+    if (!ruaSelecionada || !endNumero.trim()) return;
+    setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
+    const endCompleto = ruaSelecionada.mainText + ", " + endNumero + ", Pelotas, RS, Brasil";
     try {
-      const geoRes = await fetch(`${PROXY}?place_id=${s.place_id}`);
+      const geoRes = await fetch(`${PROXY}?place_id=${ruaSelecionada.placeId}`);
       const geoData = await geoRes.json();
       if (geoData.status === "OK" && geoData.results.length > 0) {
-        const endFormatado = geoData.results[0].formatted_address || s.description;
         const { lat, lng } = geoData.results[0].geometry.location;
+        const endFormatado = ruaSelecionada.mainText + ", " + endNumero + " - Pelotas, RS";
         setEndereco(endFormatado);
 
-        // Check if address has a street number
-        const hasNumber = geoData.results[0].address_components?.some(c => c.types.includes("street_number"));
-        if (!hasNumber) {
-          setErroEnd("Endereço sem número. Por favor selecione um endereço completo com número.");
-          setDistanciaInfo(null);
-          setCalculando(false);
-          return;
-        }
-
         const origem = encodeURIComponent("Av. Pres. Juscelino Kubitscheck de Oliveira 4165, Areal, Pelotas, RS, 96020-090, Brasil");
-        const destino = encodeURIComponent(endFormatado);
+        const destino = encodeURIComponent(endCompleto);
         const distRes = await fetch(`${PROXY}?origins=${origem}&destinations=${destino}`);
         const distData = await distRes.json();
 
@@ -223,10 +228,14 @@ export default function LaCelesteApp() {
         setDistanciaInfo({ km: km.toFixed(1), faixa, lat, lng });
         if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km).");
       } else {
-        setErroEnd("Endereço não encontrado.");
+        setErroEnd("Endereço não encontrado. Tente novamente.");
       }
     } catch(e) { setErroEnd("Erro ao calcular distância."); }
     setCalculando(false);
+  }
+
+  async function selecionarSugestao(s) {
+    selecionarRua(s);
   }
 
   // Delivery order
@@ -252,7 +261,7 @@ export default function LaCelesteApp() {
     if (obs) msg += "\n📝 *Obs:* " + obs + "\n";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
     setOrders(prev => [{ id: nextId++, cliente: clienteNome, mesa: isRetirada ? "Retirada" : distanciaInfo?.km + " km", itens: [...cart], obs, status: "recebido", hora: new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}), total, tipoEntrega }, ...prev]);
-    setCart([]); setClienteNome(""); setClienteTel(""); setTipoEntrega(null); setEndereco(""); setComplemento(""); setDistanciaInfo(null); setObs(""); setPagamento(null); setTroco(""); setShowCart(false); setStep(1);
+    setCart([]); setClienteNome(""); setClienteTel(""); setTipoEntrega(null); setEndereco(""); setComplemento(""); setDistanciaInfo(null); setObs(""); setPagamento(null); setTroco(""); setShowCart(false); setStep(1); setRuaSelecionada(null); setEndNumero("");
     showToast("Pedido enviado! 🎉");
   }
 
@@ -301,7 +310,7 @@ export default function LaCelesteApp() {
   const done = orders.filter(o => o.status === "entregue");
 
   const canDeliveryStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
-  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null && !erroEnd);
+  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
   const hoje = new Date().toISOString().split('T')[0];
@@ -800,20 +809,52 @@ export default function LaCelesteApp() {
                             <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
                             <div style={{fontSize:12,color:"#047857",marginTop:4}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
                           </div>
-                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",marginLeft:12,flexShrink:0}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);setErroEnd("");}}>Trocar</button>
+                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",marginLeft:12,flexShrink:0}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);setErroEnd("");setRuaSelecionada(null);setEndNumero("");}}>Trocar</button>
                         </div>
                       ):(
                         <div className="frete-err">
                           <div style={{fontSize:13,fontWeight:700,color:"#b91c1c",marginBottom:6}}>📍 {endereco}</div>
                           <div style={{fontSize:12,color:"#dc2626",fontWeight:700,marginBottom:8}}>⚠️ Fora da área de entrega (acima de 13 km)</div>
-                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer"}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);}}>← Buscar outro</button>
+                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer"}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);setRuaSelecionada(null);setEndNumero("");}}>← Buscar outro</button>
                         </div>
                       )}
                     </div>
+                  ) : ruaSelecionada&&!distanciaInfo?(
+                    <div style={{marginBottom:10}}>
+                      <div style={{background:"#f0f6fc",borderRadius:10,padding:"10px 14px",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:11,fontWeight:800,color:"#7a9ab5",textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Rua selecionada</div>
+                          <div style={{fontSize:14,fontWeight:700,color:"#1a3a5c"}}>📍 {ruaSelecionada.mainText}</div>
+                        </div>
+                        <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",flexShrink:0,marginLeft:8}} onClick={()=>{setRuaSelecionada(null);setEndereco("");setEndNumero("");setErroEnd("");}}>Trocar rua</button>
+                      </div>
+                      <label className="field-label">Número<span className="obrigatorio">*</span></label>
+                      <div style={{display:"flex",gap:8,marginBottom:6}}>
+                        <input
+                          className="input"
+                          placeholder="Ex: 123"
+                          value={endNumero}
+                          onChange={e=>{setEndNumero(e.target.value);setErroEnd("");}}
+                          inputMode="numeric"
+                          style={{flex:1}}
+                          onKeyDown={e=>{ if(e.key==="Enter"&&endNumero.trim()) confirmarEndereco(); }}
+                          autoFocus
+                        />
+                        <button
+                          className="btn-primary"
+                          style={{width:"auto",padding:"11px 18px",fontSize:14,flexShrink:0}}
+                          disabled={!endNumero.trim()||calculando}
+                          onClick={confirmarEndereco}
+                        >
+                          {calculando?<span className="spinner"/>:"Confirmar"}
+                        </button>
+                      </div>
+                      {erroEnd&&<div style={{fontSize:12,color:"#e63946",fontWeight:700}}>⚠️ {erroEnd}</div>}
+                    </div>
                   ):(
                     <div style={{marginBottom:10,position:"relative"}}>
-                      <label className="field-label">Buscar endereço<span className="obrigatorio">*</span></label>
-                      <input className="input" placeholder="Digite sua rua e número..." value={endereco} onChange={e=>handleEnderecoInput(e.target.value)} autoComplete="off" disabled={calculando}/>
+                      <label className="field-label">Buscar rua / avenida<span className="obrigatorio">*</span></label>
+                      <input className="input" placeholder="Digite o nome da rua..." value={endereco} onChange={e=>handleEnderecoInput(e.target.value)} autoComplete="off" disabled={calculando}/>
                       {calculando&&<div style={{position:"absolute",right:12,top:36}}><div className="spinner"/></div>}
                       {sugestoes.length>0&&(
                         <div className="sugestoes">
@@ -824,6 +865,9 @@ export default function LaCelesteApp() {
                             </div>
                           ))}
                         </div>
+                      )}
+                      {!calculando&&endereco.length>3&&sugestoes.length===0&&(
+                        <div style={{fontSize:12,color:"#7a9ab5",marginTop:4}}>Continue digitando para ver sugestões...</div>
                       )}
                     </div>
                   )}
