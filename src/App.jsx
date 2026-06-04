@@ -43,7 +43,7 @@ const MENU = {
     { id: 5,  nome: "Alcatra c/ gorgonzola", desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 39, secao: "Especiais" },
     { id: 6,  nome: "4 Queijos c/ alcatra", desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 39, secao: "Especiais" },
     { id: 7,  nome: "Vazio c/ cebola caramelizada", desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 39, secao: "Especiais" },
-    { id: 8,  nome: "Entrecot c/ chimichurri", desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 42, secao: "Especiais" },
+    { id: 8,  nome: "Entrecot c/ chimichurri", desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 39, secao: "Especiais" },
     { id: 9,  nome: "Mussarela c/ pesto uruguaio", desc: "Molho de tomate, mussarela e pesto uruguaio", preco: 34, secao: "Especiais" },
     { id: 10, nome: "Presunto parma c/ geleia de figo", desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48, secao: "Especiais" },
     // Doces
@@ -564,6 +564,7 @@ export default function LaCelesteApp() {
 
           <div className="section-card" style={{marginTop:12}}>
             <div className="section-label">Local do evento</div>
+            <label className="field-label">Endereço ou nome do espaço<span className="obrigatorio">*</span></label>
             <input className="input" placeholder="Endereço ou nome do espaço" value={evLocal} onChange={e=>setEvLocal(e.target.value)}/>
           </div>
 
