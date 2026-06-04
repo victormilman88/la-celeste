@@ -413,7 +413,7 @@ export default function LaCelesteApp() {
         .tabela-frete th{background:#e8f2fb;color:#1a3a5c;font-weight:800;padding:6px 10px;text-align:left;}
         .tabela-frete td{padding:5px 10px;border-top:1px solid #f0f6fc;color:#444;}
         .field-label{font-size:12px;font-weight:700;color:#7a9ab5;display:block;margin-bottom:4px;}
-        .obrigatorio{color:#e63946;margin-left:2px;}
+        .obrigatorio{color:#e63946 !important;margin-left:2px;font-style:normal !important;text-transform:none !important;}
         .frete-ok{background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:12px;padding:12px 14px;margin-top:10px;}
         .frete-err{background:#fee2e2;border:1.5px solid #fca5a5;border-radius:12px;padding:12px 14px;margin-top:10px;}
 
