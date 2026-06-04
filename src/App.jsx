@@ -219,7 +219,7 @@ export default function LaCelesteApp() {
 
         let km;
         if (distData.status === "OK" && distData.rows?.[0]?.elements?.[0]?.status === "OK") {
-          km = (distData.rows[0].elements[0].distance.value / 1000) * 1.1;
+          km = (distData.rows[0].elements[0].distance.value / 1000) * 1.05;
         } else {
           km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
         }
