@@ -563,10 +563,9 @@ export default function LaCelesteApp() {
           </div>
 
           <div className="section-card" style={{marginTop:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:10}}>
-              <span style={{fontSize:11,fontWeight:800,color:"#7a9ab5",textTransform:"uppercase",letterSpacing:1}}>Local do evento</span>
-              <span style={{color:"#e63946",fontWeight:900,fontSize:16,lineHeight:1}}>*</span>
-            </div>
+            <label className="field-label" style={{fontSize:12,marginBottom:10,display:"block"}}>
+              Local do evento<span className="obrigatorio">*</span>
+            </label>
             <input className="input" placeholder="Endereço ou nome do espaço" value={evLocal} onChange={e=>setEvLocal(e.target.value)}/>
           </div>
 
