@@ -259,7 +259,7 @@ export default function LaCelesteApp() {
     msg += "👤 *Nome:* " + evNome + "\n";
     msg += "📱 *WhatsApp:* " + evTel + "\n";
     msg += "📅 *Data do evento:* " + evData + "\n";
-    msg += "📍 *Local:* " + evLocal + "\n\n";
+    msg += "📍 *Local:* " + (evLocal || "A definir") + "\n\n";
     msg += "👥 *Participantes:*\n";
     msg += "• Adultos (acima de 13 anos): " + evAdultosN + " × R$ 50 = " + fmt(evAdultosN * 50) + "\n";
     msg += "• Crianças 6-12 anos: " + evMeiasN + " × R$ 25 = " + fmt(evMeiasN * 25) + "\n";
@@ -280,7 +280,7 @@ export default function LaCelesteApp() {
   const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
-  const canEvento = evNome && evTel && evData && evLocal && evAdultosN >= 25;
+  const canEvento = evNome && evTel && evData && evAdultosN >= 25;
 
   // Render sections for pizza menu
   function renderMenuSection(items) {
@@ -563,7 +563,7 @@ export default function LaCelesteApp() {
 
           <div className="section-card" style={{marginTop:12}}>
             <div className="section-label">Local do evento</div>
-            <label className="field-label">Endereço ou nome do espaço<span className="obrigatorio">*</span></label>
+            <label className="field-label">Endereço ou nome do espaço <span style={{fontWeight:400,color:"#aaa"}}>(opcional)</span></label>
             <input className="input" placeholder="Endereço ou nome do espaço" value={evLocal} onChange={e=>setEvLocal(e.target.value)}/>
           </div>
 
