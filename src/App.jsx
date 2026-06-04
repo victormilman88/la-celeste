@@ -32,6 +32,29 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 
 function fmt(n) { return "R$ " + Number(n).toFixed(2).replace(".", ","); }
 
+function isAberto() {
+  const now = new Date();
+  const dia = now.getDay(); // 0=dom, 1=seg, 2=ter...6=sab
+  const hora = now.getHours() + now.getMinutes() / 60;
+  // Aberto ter-dom (2-6, 0) das 18:30 às 23:00
+  const diasAberto = [0, 2, 3, 4, 5, 6];
+  return diasAberto.includes(dia) && hora >= 18.5 && hora < 23;
+}
+
+function msgAgendamento() {
+  const now = new Date();
+  const dia = now.getDay();
+  const hora = now.getHours() + now.getMinutes() / 60;
+  const diasAberto = [0, 2, 3, 4, 5, 6];
+  if (!diasAberto.includes(dia) || hora < 18.5) {
+    return "⏰ Estamos fechados agora. Seu pedido será agendado para hoje às 18h30 (se for ter-dom) ou na próxima abertura.";
+  }
+  if (hora >= 23) {
+    return "⏰ Já encerramos por hoje. Seu pedido será agendado para amanhã às 18h30.";
+  }
+  return null;
+}
+
 const MENU = {
   pizzas: [
     // Salgadas
@@ -94,7 +117,6 @@ const MENU = {
 
 const CATEGORIAS_CARDAPIO = [
   { key: "pizzas",    label: "🍕 Pizzas" },
-  { key: "congeladas",label: "🧊 Congeladas" },
   { key: "aguas",     label: "🥤 Bebidas" },
   { key: "cervejas",  label: "🍺 Cervejas" },
   { key: "vinhos",    label: "🍷 Vinhos" },
@@ -259,6 +281,8 @@ export default function LaCelesteApp() {
     msg += "💳 *Pagamento:* " + (pagamento === "dinheiro" ? "Dinheiro" + (troco ? " (troco p/ R$ " + troco + ")" : "") : pagamento === "pix" ? "PIX" : "Cartão") + "\n";
     msg += "\n✅ *Total:* " + fmt(total) + "\n";
     if (obs) msg += "\n📝 *Obs:* " + obs + "\n";
+    const agend = msgAgendamento();
+    if (agend) msg += "\n" + agend + "\n";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
     setOrders(prev => [{ id: nextId++, cliente: clienteNome, mesa: isRetirada ? "Retirada" : distanciaInfo?.km + " km", itens: [...cart], obs, status: "recebido", hora: new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}), total, tipoEntrega }, ...prev]);
     setCart([]); setClienteNome(""); setClienteTel(""); setTipoEntrega(null); setEndereco(""); setComplemento(""); setDistanciaInfo(null); setObs(""); setPagamento(null); setTroco(""); setShowCart(false); setStep(1); setRuaSelecionada(null); setEndNumero("");
@@ -273,7 +297,7 @@ export default function LaCelesteApp() {
     msg += "🍕 *Itens:*\n";
     cart.forEach(c => { msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + " — " + fmt(c.item.preco * c.qty) + "\n"; });
     msg += "\n💰 *Total:* " + fmt(subtotal) + "\n";
-    msg += "💳 *Pagamento:* " + (localPag === "pix" ? "PIX" : "Retirar no caixa") + "\n";
+    msg += "💳 *Pagamento:* No balcão\n";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
     setOrders(prev => [{ id: nextId++, cliente: localNome, mesa: "Mesa " + localMesa, itens: [...cart], obs: "", status: "recebido", hora: new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}), total: subtotal, tipoEntrega: "local" }, ...prev]);
     setCart([]); setLocalNome(""); setLocalMesa(""); setLocalPag(null); setShowLocalCart(false);
@@ -470,7 +494,7 @@ export default function LaCelesteApp() {
       {/* HEADER */}
       <div className="header">
         <div className="header-inner">
-          <div style={{cursor:"pointer"}} onClick={() => setAppMode("home")}>
+          <div style={{cursor:"pointer"}} onClick={() => { if(appMode==="home") return; setAppMode("home"); setCart([]); }}>
             <div className="logo-text">☀ LA CELESTE</div>
             <div className="logo-sub">Pizzaria Uruguaia · Pelotas</div>
           </div>
@@ -512,6 +536,15 @@ export default function LaCelesteApp() {
             <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
           </div>
 
+          <div className="home-card" onClick={() => { setAppMode("congeladas"); }}>
+            <div className="home-icon" style={{background:"#e8f6ff"}}>🧊</div>
+            <div>
+              <div className="home-card-title">Assar em Casa</div>
+              <div className="home-card-sub">Pizzas congeladas individuais — leve e asse quando quiser!</div>
+            </div>
+            <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
+          </div>
+
           <div className="home-card" onClick={() => setAppMode("eventos")}>
             <div className="home-icon" style={{background:"#fdf2f8"}}>🎉</div>
             <div>
@@ -519,6 +552,16 @@ export default function LaCelesteApp() {
               <div className="home-card-sub">Leve a La Celeste para o seu evento! Rodízio com forno próprio</div>
             </div>
             <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
+          </div>
+
+          {/* Horário de funcionamento */}
+          <div style={{background:"#fff",borderRadius:14,border:"1px solid #daeaf7",padding:"14px 16px",marginTop:4,display:"flex",gap:12,alignItems:"center"}}>
+            <div style={{fontSize:24,flexShrink:0}}>🕐</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:14,color:"#1a3a5c",marginBottom:2}}>Horário de funcionamento</div>
+              <div style={{fontSize:13,color:"#7a9ab5"}}>Terça a domingo · 18h30 às 23h00</div>
+              <div style={{fontSize:12,color:"#4a90c4",marginTop:2,fontWeight:600}}>Pedidos fora do horário são agendados para a próxima abertura ✓</div>
+            </div>
           </div>
         </div>
       )}
@@ -538,6 +581,18 @@ export default function LaCelesteApp() {
               </div>
             )}
             {renderMenuSection(MENU[categoria])}
+          </div>
+        </div>
+      )}
+
+      {/* ── ASSAR EM CASA ── */}
+      {appMode === "congeladas" && (
+        <div style={{maxWidth:640,margin:"0 auto",paddingBottom:100}}>
+          <div style={{background:"#e8f6ff",borderLeft:"4px solid #4a90c4",padding:"12px 16px",margin:"12px 16px",borderRadius:"0 10px 10px 0",fontSize:13,color:"#1a3a5c",fontWeight:600}}>
+            🧊 Pizzas individuais congeladas — retire na pizzaria e asse em casa quando quiser!
+          </div>
+          <div style={{padding:"0 16px 0"}}>
+            {renderMenuSection(MENU["congeladas"])}
           </div>
         </div>
       )}
@@ -712,9 +767,9 @@ export default function LaCelesteApp() {
       )}
 
       {/* CART FLOAT */}
-      {(appMode==="delivery"||appMode==="local") && cartCount>0 && (
+      {(appMode==="delivery"||appMode==="local"||appMode==="congeladas") && cartCount>0 && (
         <div className="cart-float">
-          <button className="cart-pill" onClick={()=>{ if(appMode==="delivery"){setStep(1);setShowCart(true);}else setShowLocalCart(true); }}>
+          <button className="cart-pill" onClick={()=>{ if(appMode==="local"){setShowLocalCart(true);}else{setStep(1);setShowCart(true);} }}>
             <span className="cart-badge">{cartCount}</span>
             Ver pedido · {fmt(subtotal)}
           </button>
@@ -924,6 +979,11 @@ export default function LaCelesteApp() {
                 <div className="total-row"><span>Total</span><span style={{color:"#4a90c4"}}>{fmt(total)}</span></div>
               </div>
               <button className="btn-wpp" style={{marginTop:16}} disabled={!canDeliveryStep3} onClick={confirmDelivery}>📲 Enviar pedido via WhatsApp</button>
+              {msgAgendamento() && (
+                <div style={{background:"#fef3c7",border:"1.5px solid #fcd34d",borderRadius:10,padding:"10px 14px",marginTop:10,fontSize:13,color:"#92400e",fontWeight:600}}>
+                  {msgAgendamento()}
+                </div>
+              )}
               <div style={{fontSize:12,color:"#7a9ab5",textAlign:"center",marginTop:8}}>Você será redirecionado para o WhatsApp com o pedido formatado</div>
             </>}
           </div>
@@ -970,24 +1030,16 @@ export default function LaCelesteApp() {
             </div>
 
             <div className="section-card" style={{marginTop:12}}>
-              <div className="section-label">Forma de pagamento</div>
-              <div className={"radio-option"+(localPag==="pix"?" selected":"")} onClick={()=>setLocalPag("pix")}>
-                <div className="radio-dot"><div className="radio-dot-inner"/></div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:14}}>⚡ PIX</div>
-                  <div style={{fontSize:12,color:"#7a9ab5"}}>Pague agora pelo QR code</div>
-                </div>
-              </div>
-              <div className={"radio-option"+(localPag==="caixa"?" selected":"")} onClick={()=>setLocalPag("caixa")}>
-                <div className="radio-dot"><div className="radio-dot-inner"/></div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:14}}>🏧 Pagar no caixa</div>
-                  <div style={{fontSize:12,color:"#7a9ab5"}}>Débito, crédito ou dinheiro no caixa</div>
+              <div style={{background:"#fff8e1",borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"center"}}>
+                <div style={{fontSize:20}}>🏧</div>
+                <div>
+                  <div style={{fontWeight:700,fontSize:14,color:"#92400e"}}>Pagamento no balcão</div>
+                  <div style={{fontSize:12,color:"#b45309",marginTop:2}}>Débito, crédito ou dinheiro — direto no caixa ao retirar seu pedido</div>
                 </div>
               </div>
             </div>
 
-            <button className="btn-wpp" style={{marginTop:16}} disabled={!canLocal} onClick={confirmLocal}>📲 Enviar pedido</button>
+            <button className="btn-wpp" style={{marginTop:16}} disabled={!localNome.trim()||!localMesa.trim()||!cart.length} onClick={confirmLocal}>📲 Enviar pedido</button>
           </div>
         </div>
       )}
