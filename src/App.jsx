@@ -191,7 +191,6 @@ export default function LaCelesteApp() {
     setSugestoes([]); setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
     setEndereco(s.description);
     try {
-      // Step 1: Geocode to get coordinates
       const geoRes = await fetch(`${PROXY}?place_id=${s.place_id}`);
       const geoData = await geoRes.json();
       if (geoData.status === "OK" && geoData.results.length > 0) {
@@ -199,7 +198,15 @@ export default function LaCelesteApp() {
         const { lat, lng } = geoData.results[0].geometry.location;
         setEndereco(endFormatado);
 
-        // Step 2: Get real road distance via Distance Matrix
+        // Check if address has a street number
+        const hasNumber = geoData.results[0].address_components?.some(c => c.types.includes("street_number"));
+        if (!hasNumber) {
+          setErroEnd("Endereço sem número. Por favor selecione um endereço completo com número.");
+          setDistanciaInfo(null);
+          setCalculando(false);
+          return;
+        }
+
         const origem = encodeURIComponent("Av. Pres. Juscelino Kubitscheck de Oliveira 4165, Areal, Pelotas, RS, 96020-090, Brasil");
         const destino = encodeURIComponent(endFormatado);
         const distRes = await fetch(`${PROXY}?origins=${origem}&destinations=${destino}`);
@@ -207,10 +214,8 @@ export default function LaCelesteApp() {
 
         let km;
         if (distData.status === "OK" && distData.rows?.[0]?.elements?.[0]?.status === "OK") {
-          // Real road distance in meters → km
           km = distData.rows[0].elements[0].distance.value / 1000;
         } else {
-          // Fallback to straight line
           km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
         }
 
@@ -296,7 +301,7 @@ export default function LaCelesteApp() {
   const done = orders.filter(o => o.status === "entregue");
 
   const canDeliveryStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
-  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
+  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null && !erroEnd);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
   const hoje = new Date().toISOString().split('T')[0];
@@ -795,7 +800,7 @@ export default function LaCelesteApp() {
                             <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
                             <div style={{fontSize:12,color:"#047857",marginTop:4}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
                           </div>
-                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",marginLeft:12,flexShrink:0}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);}}>Trocar</button>
+                          <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",marginLeft:12,flexShrink:0}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);setErroEnd("");}}>Trocar</button>
                         </div>
                       ):(
                         <div className="frete-err">
