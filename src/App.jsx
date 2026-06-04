@@ -34,22 +34,21 @@ function fmt(n) { return "R$ " + Number(n).toFixed(2).replace(".", ","); }
 
 const MENU = {
   pizzas: [
-    // Clássicas
-    { id: 1,  nome: "Marguerita",       desc: "Molho de tomate, mussarela, tomate cereja, pesto e manjericão", preco: 35, secao: "Clássicas" },
-    { id: 2,  nome: "Calabresa",        desc: "Molho de tomate, mussarela, calabresa, catupiry e orégano", preco: 35, secao: "Clássicas" },
-    { id: 3,  nome: "Pepperoni",        desc: "Molho de tomate, mussarela, pepperoni, catupiry e orégano", preco: 36, secao: "Clássicas" },
-    // Especiais
-    { id: 4,  nome: "5 Queijos",        desc: "Molho de tomate, mussarela, provolone, gorgonzola, prato, cheddar e orégano", preco: 39, secao: "Especiais" },
-    { id: 5,  nome: "Alcatra c/ gorgonzola", desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 39, secao: "Especiais" },
-    { id: 6,  nome: "4 Queijos c/ alcatra", desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 39, secao: "Especiais" },
-    { id: 7,  nome: "Vazio c/ cebola caramelizada", desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 39, secao: "Especiais" },
-    { id: 8,  nome: "Entrecot c/ chimichurri", desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 39, secao: "Especiais" },
-    { id: 9,  nome: "Mussarela c/ pesto uruguaio", desc: "Molho de tomate, mussarela e pesto uruguaio", preco: 34, secao: "Especiais" },
-    { id: 10, nome: "Presunto parma c/ geleia de figo", desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48, secao: "Especiais" },
+    // Salgadas
+    { id: 1,  nome: "Mussarela c/ pesto uruguaio",      desc: "Molho de tomate, mussarela e pesto uruguaio", preco: 34, secao: "Salgadas" },
+    { id: 2,  nome: "Marguerita",                        desc: "Molho de tomate, mussarela, tomate cereja, pesto e manjericão", preco: 35, secao: "Salgadas" },
+    { id: 3,  nome: "Calabresa",                         desc: "Molho de tomate, mussarela, calabresa, catupiry e orégano", preco: 35, secao: "Salgadas" },
+    { id: 4,  nome: "Pepperoni",                         desc: "Molho de tomate, mussarela, pepperoni, catupiry e orégano", preco: 36, secao: "Salgadas" },
+    { id: 5,  nome: "5 Queijos",                         desc: "Molho de tomate, mussarela, provolone, gorgonzola, prato, cheddar e orégano", preco: 39, secao: "Salgadas" },
+    { id: 6,  nome: "Alcatra c/ gorgonzola",             desc: "Molho de tomate, mussarela, alcatra, gorgonzola e orégano", preco: 39, secao: "Salgadas" },
+    { id: 7,  nome: "4 Queijos c/ alcatra",              desc: "Molho de tomate, mussarela, alcatra, prato, provolone, cheddar e orégano", preco: 39, secao: "Salgadas" },
+    { id: 8,  nome: "Vazio c/ cebola caramelizada",      desc: "Molho de tomate, mussarela, vazio e cebola caramelizada", preco: 39, secao: "Salgadas" },
+    { id: 9,  nome: "Entrecot c/ chimichurri",           desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 42, secao: "Salgadas" },
+    { id: 10, nome: "Presunto parma c/ geleia de figo",  desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48, secao: "Salgadas" },
     // Doces
-    { id: 11, nome: "Doce de leite Conaprole", desc: "Doce de leite Conaprole e mussarela", preco: 36, secao: "Doces" },
-    { id: 12, nome: "Chocolate c/ castanha de caju", desc: "Chocolate ao leite ou branco, mussarela e castanha de caju", preco: 36, secao: "Doces" },
-    { id: 13, nome: "Chocolate c/ MM's", desc: "Chocolate ao leite ou branco e confeito MM's", preco: 36, secao: "Doces" },
+    { id: 11, nome: "Doce de leite Conaprole",           desc: "Doce de leite Conaprole e mussarela", preco: 36, secao: "Doces" },
+    { id: 12, nome: "Chocolate c/ castanha de caju",     desc: "Chocolate ao leite ou branco, mussarela e castanha de caju", preco: 36, secao: "Doces" },
+    { id: 13, nome: "Chocolate c/ MM's",                 desc: "Chocolate ao leite ou branco e confeito MM's", preco: 36, secao: "Doces" },
   ],
   congeladas: [
     { id: 14, nome: "Marguerita",       desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
