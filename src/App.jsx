@@ -200,7 +200,7 @@ export default function LaCelesteApp() {
         setEndereco(endFormatado);
 
         // Step 2: Get real road distance via Distance Matrix
-        const origem = encodeURIComponent("Avenida Juscelino Kubitschek 4165, Pelotas, RS, Brasil");
+        const origem = encodeURIComponent("Av. Pres. Juscelino Kubitscheck de Oliveira 4165, Areal, Pelotas, RS, 96020-090, Brasil");
         const destino = encodeURIComponent(endFormatado);
         const distRes = await fetch(`${PROXY}?origins=${origem}&destinations=${destino}`);
         const distData = await distRes.json();
