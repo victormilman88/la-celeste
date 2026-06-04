@@ -280,7 +280,8 @@ export default function LaCelesteApp() {
   const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
-  const canEvento = evNome && evTel && evData && evLocal && evAdultosN >= 25;
+  const hoje = new Date().toISOString().split('T')[0];
+  const canEvento = evNome && evTel && evData && evData >= hoje && evLocal && evAdultosN >= 25;
 
   // Render sections for pizza menu
   function renderMenuSection(items) {
@@ -556,14 +557,15 @@ export default function LaCelesteApp() {
             <div style={{display:"flex",gap:10}}>
               <div style={{flex:1}}>
                 <label className="field-label">Data do evento<span className="obrigatorio">*</span></label>
-                <input className="input" type="date" value={evData} onChange={e=>setEvData(e.target.value)}/>
+                <input className="input" type="date" value={evData} min={new Date().toISOString().split('T')[0]} onChange={e=>setEvData(e.target.value)}/>
               </div>
             </div>
           </div>
 
           <div className="section-card" style={{marginTop:12}}>
-            <div className="section-label">Local do evento</div>
-            <label className="field-label">Endereço ou nome do espaço<span className="obrigatorio">*</span></label>
+            <div style={{fontSize:11,fontWeight:800,color:"#7a9ab5",textTransform:"uppercase",letterSpacing:1,marginBottom:8,display:"flex",alignItems:"center",gap:4}}>
+              Local do evento <span style={{color:"#e63946",fontSize:13}}>*</span>
+            </div>
             <input className="input" placeholder="Endereço ou nome do espaço" value={evLocal} onChange={e=>setEvLocal(e.target.value)}/>
           </div>
 
