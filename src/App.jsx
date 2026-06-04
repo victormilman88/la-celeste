@@ -191,16 +191,35 @@ export default function LaCelesteApp() {
     setSugestoes([]); setCalculando(true); setErroEnd(""); setDistanciaInfo(null);
     setEndereco(s.description);
     try {
-      const res = await fetch(`${PROXY}?place_id=${s.place_id}`);
-      const data = await res.json();
-      if (data.status === "OK" && data.results.length > 0) {
-        const { lat, lng } = data.results[0].geometry.location;
-        const km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
+      // Step 1: Geocode to get coordinates
+      const geoRes = await fetch(`${PROXY}?place_id=${s.place_id}`);
+      const geoData = await geoRes.json();
+      if (geoData.status === "OK" && geoData.results.length > 0) {
+        const endFormatado = geoData.results[0].formatted_address || s.description;
+        const { lat, lng } = geoData.results[0].geometry.location;
+        setEndereco(endFormatado);
+
+        // Step 2: Get real road distance via Distance Matrix
+        const origem = encodeURIComponent(PIZZARIA_LAT + "," + PIZZARIA_LNG);
+        const destino = encodeURIComponent(lat + "," + lng);
+        const distRes = await fetch(`${PROXY}?origins=${origem}&destinations=${destino}`);
+        const distData = await distRes.json();
+
+        let km;
+        if (distData.status === "OK" && distData.rows?.[0]?.elements?.[0]?.status === "OK") {
+          // Real road distance in meters → km
+          km = distData.rows[0].elements[0].distance.value / 1000;
+        } else {
+          // Fallback to straight line
+          km = haversineKm(PIZZARIA_LAT, PIZZARIA_LNG, lat, lng);
+        }
+
         const faixa = calcularFrete(km);
-        setEndereco(data.results[0].formatted_address || s.description);
         setDistanciaInfo({ km: km.toFixed(1), faixa, lat, lng });
         if (faixa.taxa === null) setErroEnd("Fora da área de entrega (acima de 13 km).");
-      } else setErroEnd("Endereço não encontrado.");
+      } else {
+        setErroEnd("Endereço não encontrado.");
+      }
     } catch(e) { setErroEnd("Erro ao calcular distância."); }
     setCalculando(false);
   }
