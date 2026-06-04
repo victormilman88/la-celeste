@@ -280,7 +280,7 @@ export default function LaCelesteApp() {
   const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
-  const canEvento = evNome && evTel && evData && evAdultosN >= 25;
+  const canEvento = evNome && evTel && evData && evLocal && evAdultosN >= 25;
 
   // Render sections for pizza menu
   function renderMenuSection(items) {
@@ -563,7 +563,7 @@ export default function LaCelesteApp() {
 
           <div className="section-card" style={{marginTop:12}}>
             <div className="section-label">Local do evento</div>
-            <label className="field-label">Endereço ou nome do espaço <span style={{fontWeight:400,color:"#aaa"}}>(opcional)</span></label>
+            <label className="field-label">Endereço ou nome do espaço<span className="obrigatorio">*</span></label>
             <input className="input" placeholder="Endereço ou nome do espaço" value={evLocal} onChange={e=>setEvLocal(e.target.value)}/>
           </div>
 
@@ -613,7 +613,7 @@ export default function LaCelesteApp() {
           {!canEvento && evAdultosN > 0 && evAdultosN < 25 && (
             <div style={{fontSize:12,color:"#e63946",textAlign:"center",marginTop:8}}>Mínimo de 25 adultos para realizar o evento</div>
           )}
-          {!canEvento && (!evNome||!evTel||!evData||!evLocal) && (
+          {!canEvento && (!evNome||!evTel||!evData) && (
             <div style={{fontSize:12,color:"#7a9ab5",textAlign:"center",marginTop:8}}>Preencha todos os campos obrigatórios</div>
           )}
         </div>
