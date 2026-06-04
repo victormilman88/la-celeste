@@ -2,8 +2,8 @@ import { useState, useRef } from "react";
 
 const WHATSAPP_NUMBER = "5553991321557";
 const GOOGLE_MAPS_API_KEY = "AIzaSyAmNw6R38YWVm9qT9QcdeDvpMdMEs-pnzY";
-const PIZZARIA_LAT = -31.7654;
-const PIZZARIA_LNG = -52.3376;
+const PIZZARIA_LAT = -31.7460126;
+const PIZZARIA_LNG = -52.3286167;
 const PROXY = `/api/places`;
 
 const FAIXAS_FRETE = [
@@ -200,8 +200,8 @@ export default function LaCelesteApp() {
         setEndereco(endFormatado);
 
         // Step 2: Get real road distance via Distance Matrix
-        const origem = encodeURIComponent(PIZZARIA_LAT + "," + PIZZARIA_LNG);
-        const destino = encodeURIComponent(lat + "," + lng);
+        const origem = encodeURIComponent("Avenida Juscelino Kubitschek 4165, Pelotas, RS, Brasil");
+        const destino = encodeURIComponent(endFormatado);
         const distRes = await fetch(`${PROXY}?origins=${origem}&destinations=${destino}`);
         const distData = await distRes.json();
 
