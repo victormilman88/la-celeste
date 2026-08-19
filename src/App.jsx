@@ -197,6 +197,9 @@ export default function LaCelesteApp() {
       desc: comboPizza + " + Doce de leite Conaprole + " + comboRefri1 + " + " + comboRefri2,
       preco: 70,
       isCombo: true,
+      comboPizza,
+      comboRefri1,
+      comboRefri2,
     };
     setCart(prev => [...prev, { uid: Date.now() + Math.random(), item: comboItem, qty: 1 }]);
     setComboPizza(""); setComboRefri1(""); setComboRefri2("");
@@ -286,7 +289,15 @@ export default function LaCelesteApp() {
     msg += "🍕 *Itens:*\n";
     cart.forEach(c => {
       const isCongelada = c.item.id >= 14 && c.item.id <= 23;
-      msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + (isCongelada ? " ❄️" : "") + " — " + fmt(c.item.preco * c.qty) + "\n";
+      if (c.item.isCombo) {
+        msg += "• 🎁 Combo La Celeste — " + fmt(c.item.preco * c.qty) + "\n";
+        msg += "   🍕 Pizza salgada: " + c.item.comboPizza + "\n";
+        msg += "   🍫 Pizza doce: Doce de leite Conaprole\n";
+        msg += "   🥤 Refrigerante 1: " + c.item.comboRefri1 + "\n";
+        msg += "   🥤 Refrigerante 2: " + c.item.comboRefri2 + "\n";
+      } else {
+        msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + (isCongelada ? " ❄️" : "") + " — " + fmt(c.item.preco * c.qty) + "\n";
+      }
     });
     msg += "\n💰 *Subtotal:* " + fmt(subtotal) + "\n";
     if (isRetirada) {
@@ -312,7 +323,17 @@ export default function LaCelesteApp() {
     msg += "👤 *Cliente:* " + localNome + "\n";
     msg += "🪑 *Mesa/Local:* " + localMesa + "\n\n";
     msg += "🍕 *Itens:*\n";
-    cart.forEach(c => { msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + " — " + fmt(c.item.preco * c.qty) + "\n"; });
+    cart.forEach(c => {
+      if (c.item.isCombo) {
+        msg += "• 🎁 Combo La Celeste — " + fmt(c.item.preco * c.qty) + "\n";
+        msg += "   🍕 Pizza salgada: " + c.item.comboPizza + "\n";
+        msg += "   🍫 Pizza doce: Doce de leite Conaprole\n";
+        msg += "   🥤 Refrigerante 1: " + c.item.comboRefri1 + "\n";
+        msg += "   🥤 Refrigerante 2: " + c.item.comboRefri2 + "\n";
+      } else {
+        msg += "• " + (c.qty > 1 ? c.qty + "× " : "") + c.item.nome + " — " + fmt(c.item.preco * c.qty) + "\n";
+      }
+    });
     msg += "\n💰 *Total:* " + fmt(subtotal) + "\n";
     msg += "💳 *Pagamento:* No balcão\n";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
