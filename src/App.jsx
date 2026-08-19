@@ -116,6 +116,7 @@ const MENU = {
 };
 
 const CATEGORIAS_CARDAPIO = [
+  { key: "combos",    label: "🎁 Combos" },
   { key: "pizzas",    label: "🍕 Pizzas" },
   { key: "aguas",     label: "🥤 Bebidas" },
   { key: "cervejas",  label: "🍺 Cervejas" },
@@ -134,10 +135,15 @@ let nextId = 1;
 export default function LaCelesteApp() {
   // App mode: home | delivery | local | eventos | painel
   const [appMode, setAppMode] = useState("home");
-  const [categoria, setCategoria] = useState("pizzas");
+  const [categoria, setCategoria] = useState("combos");
   const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
   const [toast, setToast] = useState(null);
+
+  // Combo selections
+  const [comboPizza, setComboPizza] = useState(""); // "marguerita" | "calabresa"
+  const [comboRefri1, setComboRefri1] = useState("");
+  const [comboRefri2, setComboRefri2] = useState("");
 
   // Delivery checkout
   const [showCart, setShowCart] = useState(false);
@@ -184,6 +190,21 @@ export default function LaCelesteApp() {
       return [...prev, { uid: Date.now() + Math.random(), item, qty: 1 }];
     });
     showToast(item.nome + " adicionado!");
+  }
+
+  const REFRIS_COMBO = ["Coca-Cola","Coca-Cola Zero","Guaraná Fruki","Guaraná Fruki Zero","Sprite","Sprite Zero"];
+
+  function addCombo() {
+    const comboItem = {
+      id: 999,
+      nome: "🎁 Combo La Celeste",
+      desc: comboPizza + " + Doce de leite Conaprole + " + comboRefri1 + " + " + comboRefri2,
+      preco: 70,
+      isCombo: true,
+    };
+    setCart(prev => [...prev, { uid: Date.now() + Math.random(), item: comboItem, qty: 1 }]);
+    setComboPizza(""); setComboRefri1(""); setComboRefri2("");
+    showToast("Combo adicionado! 🎁");
   }
 
   function updateQty(uid, delta) {
@@ -575,12 +596,66 @@ export default function LaCelesteApp() {
             ))}
           </div>
           <div style={{padding:"14px 16px 0"}}>
-            {categoria==="congeladas"&&(
-              <div style={{background:"#e8f2fb",borderRadius:12,padding:"10px 14px",marginBottom:12,fontSize:13,color:"#1a3a5c",fontWeight:600}}>
-                🧊 Pizzas individuais congeladas — leve para casa e asse quando quiser!
+            {categoria==="combos" ? (
+              <div>
+                {/* Combo card */}
+                <div style={{background:"linear-gradient(135deg,#1a3a5c,#4a90c4)",borderRadius:16,padding:"20px",marginBottom:16,color:"#fff"}}>
+                  <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",opacity:.8,marginBottom:6}}>Oferta especial</div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,marginBottom:4}}>🎁 Combo La Celeste</div>
+                  <div style={{fontSize:13,opacity:.9,marginBottom:16,lineHeight:1.5}}>
+                    1 pizza salgada + 1 pizza Doce de leite Conaprole + 2 refrigerantes lata
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                    <span style={{fontSize:13,textDecoration:"line-through",opacity:.6}}>R$ 84,00</span>
+                    <span style={{fontSize:24,fontWeight:800,color:"#f5c518"}}>R$ 70,00</span>
+                    <span style={{background:"#f5c518",color:"#1a3a5c",borderRadius:100,padding:"2px 10px",fontSize:12,fontWeight:800}}>-17%</span>
+                  </div>
+
+                  <div style={{background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"14px",marginBottom:12}}>
+                    <div style={{fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,marginBottom:8,opacity:.8}}>1. Escolha a pizza salgada</div>
+                    <div style={{display:"flex",gap:8}}>
+                      {["Marguerita","Calabresa"].map(p=>(
+                        <div key={p} onClick={()=>setComboPizza(p)} style={{flex:1,background:comboPizza===p?"#f5c518":"rgba(255,255,255,0.15)",color:comboPizza===p?"#1a3a5c":"#fff",borderRadius:10,padding:"10px",textAlign:"center",cursor:"pointer",fontWeight:700,fontSize:14,transition:"all .15s",border:comboPizza===p?"none":"1.5px solid rgba(255,255,255,0.3)"}}>
+                          {p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"14px",marginBottom:12}}>
+                    <div style={{fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,marginBottom:8,opacity:.8}}>2. Escolha os 2 refrigerantes</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                      {[1,2].map(n=>{
+                        const val = n===1?comboRefri1:comboRefri2;
+                        const setVal = n===1?setComboRefri1:setComboRefri2;
+                        return(
+                          <div key={n}>
+                            <div style={{fontSize:11,opacity:.7,marginBottom:4}}>Refrigerante {n}</div>
+                            <select value={val} onChange={e=>setVal(e.target.value)} style={{width:"100%",background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.3)",borderRadius:8,padding:"8px 12px",color:val?"#fff":"rgba(255,255,255,0.6)",fontSize:14,fontFamily:"inherit",outline:"none",appearance:"none"}}>
+                              <option value="">Selecione...</option>
+                              {REFRIS_COMBO.map(r=><option key={r} value={r} style={{color:"#1a3a5c",background:"#fff"}}>{r}</option>)}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={addCombo}
+                    disabled={!comboPizza||!comboRefri1||!comboRefri2}
+                    style={{width:"100%",background:(!comboPizza||!comboRefri1||!comboRefri2)?"rgba(255,255,255,0.3)":"#f5c518",color:(!comboPizza||!comboRefri1||!comboRefri2)?"rgba(255,255,255,0.6)":"#1a3a5c",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:800,cursor:(!comboPizza||!comboRefri1||!comboRefri2)?"not-allowed":"pointer",transition:"all .15s"}}>
+                    {(!comboPizza||!comboRefri1||!comboRefri2)?"Complete as escolhas acima":"Adicionar Combo · R$ 70,00"}
+                  </button>
+
+                  <div style={{fontSize:11,opacity:.7,textAlign:"center",marginTop:8}}>
+                    + Pizza Doce de leite Conaprole já incluída no combo
+                  </div>
+                </div>
               </div>
+            ) : (
+              renderMenuSection(MENU[categoria])
             )}
-            {renderMenuSection(MENU[categoria])}
           </div>
         </div>
       )}
@@ -601,7 +676,7 @@ export default function LaCelesteApp() {
       {appMode === "local" && (
         <div style={{maxWidth:640,margin:"0 auto",paddingBottom:100}}>
           <div style={{background:"#fff8e1",borderLeft:"4px solid #f5c518",padding:"12px 16px",margin:"12px 16px",borderRadius:"0 10px 10px 0",fontSize:13,color:"#92400e",fontWeight:600}}>
-            🪑 Pedido para consumo no restaurante — pagamento por PIX ou no caixa
+            🪑 Pedido para consumo no restaurante — pagamento no balcão
           </div>
           <div className="cat-scroll">
             {CATEGORIAS_CARDAPIO.map(c=>(
@@ -609,7 +684,54 @@ export default function LaCelesteApp() {
             ))}
           </div>
           <div style={{padding:"14px 16px 0"}}>
-            {renderMenuSection(MENU[categoria])}
+            {categoria==="combos" ? (
+              <div>
+                <div style={{background:"linear-gradient(135deg,#1a3a5c,#4a90c4)",borderRadius:16,padding:"20px",marginBottom:16,color:"#fff"}}>
+                  <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",opacity:.8,marginBottom:6}}>Oferta especial</div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,marginBottom:4}}>🎁 Combo La Celeste</div>
+                  <div style={{fontSize:13,opacity:.9,marginBottom:16,lineHeight:1.5}}>1 pizza salgada + 1 pizza Doce de leite Conaprole + 2 refrigerantes lata</div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                    <span style={{fontSize:13,textDecoration:"line-through",opacity:.6}}>R$ 84,00</span>
+                    <span style={{fontSize:24,fontWeight:800,color:"#f5c518"}}>R$ 70,00</span>
+                    <span style={{background:"#f5c518",color:"#1a3a5c",borderRadius:100,padding:"2px 10px",fontSize:12,fontWeight:800}}>-17%</span>
+                  </div>
+                  <div style={{background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"14px",marginBottom:12}}>
+                    <div style={{fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,marginBottom:8,opacity:.8}}>1. Escolha a pizza salgada</div>
+                    <div style={{display:"flex",gap:8}}>
+                      {["Marguerita","Calabresa"].map(p=>(
+                        <div key={p} onClick={()=>setComboPizza(p)} style={{flex:1,background:comboPizza===p?"#f5c518":"rgba(255,255,255,0.15)",color:comboPizza===p?"#1a3a5c":"#fff",borderRadius:10,padding:"10px",textAlign:"center",cursor:"pointer",fontWeight:700,fontSize:14,transition:"all .15s",border:comboPizza===p?"none":"1.5px solid rgba(255,255,255,0.3)"}}>
+                          {p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"14px",marginBottom:12}}>
+                    <div style={{fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,marginBottom:8,opacity:.8}}>2. Escolha os 2 refrigerantes</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                      {[1,2].map(n=>{
+                        const val=n===1?comboRefri1:comboRefri2;
+                        const setVal=n===1?setComboRefri1:setComboRefri2;
+                        return(
+                          <div key={n}>
+                            <div style={{fontSize:11,opacity:.7,marginBottom:4}}>Refrigerante {n}</div>
+                            <select value={val} onChange={e=>setVal(e.target.value)} style={{width:"100%",background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.3)",borderRadius:8,padding:"8px 12px",color:val?"#fff":"rgba(255,255,255,0.6)",fontSize:14,fontFamily:"inherit",outline:"none",appearance:"none"}}>
+                              <option value="">Selecione...</option>
+                              {REFRIS_COMBO.map(r=><option key={r} value={r} style={{color:"#1a3a5c",background:"#fff"}}>{r}</option>)}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <button onClick={addCombo} disabled={!comboPizza||!comboRefri1||!comboRefri2} style={{width:"100%",background:(!comboPizza||!comboRefri1||!comboRefri2)?"rgba(255,255,255,0.3)":"#f5c518",color:(!comboPizza||!comboRefri1||!comboRefri2)?"rgba(255,255,255,0.6)":"#1a3a5c",border:"none",borderRadius:12,padding:"13px",fontSize:15,fontWeight:800,cursor:(!comboPizza||!comboRefri1||!comboRefri2)?"not-allowed":"pointer",transition:"all .15s"}}>
+                    {(!comboPizza||!comboRefri1||!comboRefri2)?"Complete as escolhas acima":"Adicionar Combo · R$ 70,00"}
+                  </button>
+                  <div style={{fontSize:11,opacity:.7,textAlign:"center",marginTop:8}}>+ Pizza Doce de leite Conaprole já incluída no combo</div>
+                </div>
+              </div>
+            ) : (
+              renderMenuSection(MENU[categoria])
+            )}
           </div>
         </div>
       )}
