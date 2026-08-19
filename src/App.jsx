@@ -132,6 +132,7 @@ export default function LaCelesteApp() {
   // App mode: home | delivery | local | eventos | painel
   const [appMode, setAppMode] = useState("home");
   const [categoria, setCategoria] = useState("combos");
+  const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
   const [toast, setToast] = useState(null);
 
