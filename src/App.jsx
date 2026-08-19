@@ -104,8 +104,8 @@ const MENU = {
     { id: 51, nome: "Água sem gás",    desc: "500ml", preco: 4 },
     { id: 52, nome: "Coca-Cola",       desc: "Lata 350ml", preco: 7 },
     { id: 53, nome: "Coca-Cola Zero",  desc: "Lata 350ml", preco: 7 },
-    { id: 54, nome: "Guaraná Fruki",   desc: "Lata 350ml", preco: 7 },
-    { id: 55, nome: "Guaraná Fruki Zero", desc: "Lata 350ml", preco: 7 },
+    { id: 54, nome: "Guaraná",       desc: "Lata 350ml", preco: 7 },
+    { id: 55, nome: "Guaraná Zero",  desc: "Lata 350ml", preco: 7 },
     { id: 56, nome: "Sprite",          desc: "Lata 350ml", preco: 7 },
     { id: 57, nome: "Sprite Zero",     desc: "Lata 350ml", preco: 7 },
   ],
@@ -188,7 +188,7 @@ export default function LaCelesteApp() {
     showToast(item.nome + " adicionado!");
   }
 
-  const REFRIS_COMBO = ["Coca-Cola lata","Coca-Cola Zero lata","Guaraná Fruki lata","Guaraná Fruki Zero lata","Sprite lata","Sprite Zero lata"];
+  const REFRIS_COMBO = ["Coca-Cola lata","Coca-Cola Zero lata","Guaraná lata","Guaraná Zero lata","Sprite lata","Sprite Zero lata"];
 
   function addCombo() {
     const comboItem = {
