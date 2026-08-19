@@ -86,15 +86,11 @@ const MENU = {
     { id: 23, nome: "Doce de leite Conaprole", desc: "Pizza doce congelada individual", preco: 30, secao: "Doces" },
   ],
   cervejas: [
-    { id: 30, nome: "Heineken",         desc: "Long neck", preco: 13 },
-    { id: 31, nome: "Corona",           desc: "Long neck", preco: 13 },
-    { id: 32, nome: "Patricia",         desc: "Long neck", preco: 14 },
+    { id: 30, nome: "Heineken",           desc: "Long neck", preco: 13 },
+    { id: 31, nome: "Corona",             desc: "Long neck", preco: 13 },
     { id: 33, nome: "Heineken s/ álcool", desc: "Long neck", preco: 13 },
-    { id: 34, nome: "Norteña",          desc: "Latão", preco: 14 },
-    { id: 35, nome: "Patricia",         desc: "Latão", preco: 18 },
-    { id: 36, nome: "Zillertal",        desc: "Latão", preco: 20 },
-    { id: 37, nome: "Zillertal IPA",    desc: "Latão", preco: 24 },
-    { id: 38, nome: "Pilsen s/ álcool", desc: "Latão", preco: 16 },
+    { id: 34, nome: "Norteña",            desc: "Latão", preco: 14 },
+    { id: 35, nome: "Patricia",           desc: "Latão", preco: 18 },
   ],
   vinhos: [
     { id: 40, nome: "Juan Carrau Chardonnay",         desc: "Branco · Bodegas Carrau, Canelones, Uruguai · 750ml", preco: 80 },
@@ -136,7 +132,6 @@ export default function LaCelesteApp() {
   // App mode: home | delivery | local | eventos | painel
   const [appMode, setAppMode] = useState("home");
   const [categoria, setCategoria] = useState("combos");
-  const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
   const [toast, setToast] = useState(null);
 
@@ -192,7 +187,7 @@ export default function LaCelesteApp() {
     showToast(item.nome + " adicionado!");
   }
 
-  const REFRIS_COMBO = ["Coca-Cola","Coca-Cola Zero","Guaraná Fruki","Guaraná Fruki Zero","Sprite","Sprite Zero"];
+  const REFRIS_COMBO = ["Coca-Cola lata","Coca-Cola Zero lata","Guaraná Fruki lata","Guaraná Fruki Zero lata","Sprite lata","Sprite Zero lata"];
 
   function addCombo() {
     const comboItem = {
