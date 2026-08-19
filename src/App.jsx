@@ -97,7 +97,6 @@ const MENU = {
     { id: 41, nome: "Juan Carrau Tannat",             desc: "Tinto · Bodegas Carrau, Canelones, Uruguai · 750ml", preco: 80 },
     { id: 42, nome: "Juan Carrau Malbec",             desc: "Tinto · Bodegas Carrau, Canelones, Uruguai · 750ml", preco: 80 },
     { id: 43, nome: "Juan Carrau Cabernet Sauvignon", desc: "Tinto · Bodegas Carrau, Canelones, Uruguai · 750ml", preco: 80 },
-    { id: 44, nome: "Don Pascual Tannat Reserva",     desc: "Tinto · Establecimiento Juanicó, Canelones, Uruguai · 750ml", preco: 90 },
   ],
   aguas: [
     { id: 50, nome: "Água com gás",    desc: "500ml", preco: 4 },
