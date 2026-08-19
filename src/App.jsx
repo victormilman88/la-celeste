@@ -932,6 +932,9 @@ export default function LaCelesteApp() {
             {step===1&&<>
               <div className="sheet-title">Seu pedido</div>
               <div className="sheet-sub">Revise os itens e preencha seus dados</div>
+              <button className="btn-back" onClick={()=>setShowCart(false)} style={{marginBottom:12,color:"#4a90c4",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:4}}>
+                ← Voltar ao cardápio para adicionar mais itens
+              </button>
               <div className="section-card">
                 <div className="section-label">Itens</div>
                 {cart.map(c=>(
