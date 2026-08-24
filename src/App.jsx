@@ -1119,7 +1119,7 @@ export default function LaCelesteApp() {
               <button className="btn-back" onClick={()=>setStep(2)}>← Voltar</button>
               <div className="sheet-title">Forma de pagamento</div>
               <div className="sheet-sub">Como vai pagar?</div>
-              {[{key:"pix",label:"PIX",icon:"⚡",sub:"Pagamento na hora com QR code"},{key:"cartao",label:"Cartão",icon:"💳",sub:"Débito ou crédito na entrega/retirada"},{key:"dinheiro",label:"Dinheiro",icon:"💵",sub:"Informe se precisar de troco"}].map(p=>(
+              {[{key:"pix",label:"PIX",icon:"⚡",sub:"Chave CNPJ · 64.661.402/0001-10"},{key:"cartao",label:"Cartão",icon:"💳",sub:"Débito ou crédito na entrega/retirada"},{key:"dinheiro",label:"Dinheiro",icon:"💵",sub:"Informe se precisar de troco"}].map(p=>(
                 <div key={p.key} className={"radio-option"+(pagamento===p.key?" selected":"")} onClick={()=>setPagamento(p.key)}>
                   <div className="radio-dot"><div className="radio-dot-inner"/></div>
                   <div style={{flex:1}}>
@@ -1128,6 +1128,23 @@ export default function LaCelesteApp() {
                   </div>
                 </div>
               ))}
+              {pagamento==="pix"&&(
+                <div style={{background:"#d1fae5",border:"1.5px solid #6ee7b7",borderRadius:12,padding:"14px",marginTop:4}}>
+                  <div style={{fontSize:12,fontWeight:800,color:"#065f46",marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>Chave PIX</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{flex:1,background:"#fff",borderRadius:8,padding:"10px 12px",fontSize:14,fontWeight:700,color:"#1a3a5c",fontFamily:"monospace",letterSpacing:.5}}>
+                      64661402000110
+                    </div>
+                    <button
+                      onClick={()=>{ navigator.clipboard.writeText("64661402000110"); showToast("Chave PIX copiada! ✓"); }}
+                      style={{background:"#4a90c4",color:"#fff",borderRadius:8,padding:"10px 14px",fontSize:13,fontWeight:800,flexShrink:0,cursor:"pointer"}}>
+                      Copiar
+                    </button>
+                  </div>
+                  <div style={{fontSize:11,color:"#047857",marginTop:8}}>Tipo: CNPJ · Weber e Milman Pizza & Eventos</div>
+                  <div style={{fontSize:11,color:"#047857",marginTop:2}}>Cole a chave no app do seu banco para transferência</div>
+                </div>
+              )}
               {pagamento==="dinheiro"&&<input className="input" placeholder="Troco para quanto? (ex: 100)" value={troco} onChange={e=>setTroco(e.target.value)} style={{marginTop:10}} inputMode="numeric"/>}
               <div className="section-card" style={{marginTop:16}}>
                 <div className="sub-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
