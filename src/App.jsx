@@ -549,7 +549,7 @@ export default function LaCelesteApp() {
             <div style={{fontSize:14,color:"#7a9ab5",marginTop:6}}>Como podemos te atender hoje?</div>
           </div>
 
-          <div className="home-card" onClick={() => { setAppMode("delivery"); setCategoria("pizzas"); }}>
+          <div className="home-card" onClick={() => { setAppMode("delivery"); setCategoria("combos"); }}>
             <div className="home-icon" style={{background:"#e8f2fb"}}>🛵</div>
             <div>
               <div className="home-card-title">Delivery ou Retirada</div>
@@ -558,7 +558,7 @@ export default function LaCelesteApp() {
             <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
           </div>
 
-          <div className="home-card" onClick={() => { setAppMode("local"); setCategoria("pizzas"); }}>
+          <div className="home-card" onClick={() => { setAppMode("local"); setCategoria("combos"); }}>
             <div className="home-icon" style={{background:"#fff8e1"}}>🪑</div>
             <div>
               <div className="home-card-title">Consumo Local</div>
