@@ -422,7 +422,7 @@ export default function LaCelesteApp() {
         .tab-btn.active{background:#4a90c4;color:#fff;}
         .tab-btn:hover:not(.active){color:#fff;}
 
-        .cat-scroll{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 2px;scrollbar-width:none;}
+        .cat-scroll{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none;background:#f0f6fc;position:sticky;top:58px;z-index:40;border-bottom:1px solid #daeaf7;}
         .cat-scroll::-webkit-scrollbar{display:none;}
         .cat-btn{padding:7px 16px;border-radius:100px;font-size:13px;font-weight:700;border:2px solid #c5dff0;color:#4a90c4;background:#fff;white-space:nowrap;transition:all .15s;}
         .cat-btn.active{background:#4a90c4;color:#fff;border-color:#4a90c4;}
