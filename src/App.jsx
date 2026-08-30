@@ -87,9 +87,8 @@ const MENU = {
   ],
   cervejas: [
     { id: 30, nome: "Heineken",           desc: "Long neck", preco: 13 },
-    { id: 31, nome: "Corona",             desc: "Long neck", preco: 13 },
     { id: 33, nome: "Heineken s/ álcool", desc: "Long neck", preco: 13 },
-    { id: 34, nome: "Norteña",            desc: "Latão", preco: 14 },
+    { id: 34, nome: "Norteña",            desc: "Long neck", preco: 14 },
     { id: 35, nome: "Patricia",           desc: "Latão", preco: 18 },
   ],
   vinhos: [
