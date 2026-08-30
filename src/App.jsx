@@ -69,9 +69,11 @@ const MENU = {
     { id: 9,  nome: "Entrecot c/ chimichurri",           desc: "Molho de tomate, mussarela, entrecot, catupiry e chimichurri", preco: 42, secao: "Salgadas" },
     { id: 10, nome: "Presunto parma c/ geleia de figo",  desc: "Molho de tomate, mussarela, presunto parma e geleia de figo", preco: 48, secao: "Salgadas" },
     // Doces
-    { id: 11, nome: "Doce de leite Conaprole",           desc: "Doce de leite Conaprole e mussarela", preco: 36, secao: "Doces" },
-    { id: 12, nome: "Chocolate c/ castanha de caju",     desc: "Chocolate ao leite ou branco, mussarela e castanha de caju", preco: 36, secao: "Doces" },
-    { id: 13, nome: "Chocolate c/ MM's",                 desc: "Chocolate ao leite ou branco e confeito MM's", preco: 36, secao: "Doces" },
+    { id: 11, nome: "Doce de leite Conaprole",              desc: "Doce de leite Conaprole e mussarela", preco: 36, secao: "Doces" },
+    { id: 12, nome: "Chocolate branco c/ castanha de caju",  desc: "Chocolate branco, mussarela e castanha de caju", preco: 36, secao: "Doces" },
+    { id: 13, nome: "Chocolate ao leite c/ castanha de caju",desc: "Chocolate ao leite, mussarela e castanha de caju", preco: 36, secao: "Doces" },
+    { id: 16, nome: "Chocolate ao leite c/ MM's",            desc: "Chocolate ao leite e confeito MM's", preco: 36, secao: "Doces" },
+    { id: 17, nome: "Chocolate branco c/ MM's",              desc: "Chocolate branco e confeito MM's", preco: 36, secao: "Doces" },
   ],
   congeladas: [
     { id: 14, nome: "Marguerita",       desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
