@@ -7,14 +7,13 @@ const PIZZARIA_LNG = -52.3286167;
 const PROXY = `/api/places`;
 
 const FAIXAS_FRETE = [
-  { ate: 1,   taxa: 6,   label: "até 1 km" },
-  { ate: 2.5, taxa: 8,   label: "até 2,5 km" },
-  { ate: 4,   taxa: 10,  label: "até 4 km" },
-  { ate: 5.5, taxa: 12,  label: "até 5,5 km" },
-  { ate: 7,   taxa: 15,  label: "até 7 km" },
-  { ate: 9,   taxa: 18,  label: "até 9 km" },
-  { ate: 10,  taxa: 20,  label: "até 10 km" },
-  { ate: 13,  taxa: 25,  label: "até 13 km" },
+  { ate: 3,   taxa: 0,   label: "até 3 km" },
+  { ate: 4,   taxa: 5,   label: "até 4 km" },
+  { ate: 5.5, taxa: 8,   label: "até 5,5 km" },
+  { ate: 7,   taxa: 12,  label: "até 7 km" },
+  { ate: 9,   taxa: 15,  label: "até 9 km" },
+  { ate: 10,  taxa: 18,  label: "até 10 km" },
+  { ate: 13,  taxa: 22,  label: "até 13 km" },
   { ate: 999, taxa: null, label: "acima de 13 km" },
 ];
 
@@ -300,7 +299,7 @@ export default function LaCelesteApp() {
       msg += "🏠 *Retirada* — Av. JK, 4165\n";
     } else {
       msg += "🚗 *Entrega:* " + endereco + (complemento ? " — " + complemento : "") + "\n";
-      if (distanciaInfo) msg += "📏 ~" + distanciaInfo.km + " km · Taxa: " + fmt(distanciaInfo.faixa.taxa) + "\n";
+      if (distanciaInfo) msg += "📏 ~" + distanciaInfo.km + " km · Taxa: " + (distanciaInfo.faixa.taxa === 0 ? "Grátis 🎉" : fmt(distanciaInfo.faixa.taxa)) + "\n";
     }
     msg += "💳 *Pagamento:* " + (pagamento === "dinheiro" ? "Dinheiro" + (troco ? " (troco p/ R$ " + troco + ")" : "") : pagamento === "pix" ? "PIX" : "Cartão") + "\n";
     msg += "\n✅ *Total:* " + fmt(total) + "\n";
@@ -553,7 +552,7 @@ export default function LaCelesteApp() {
             <div className="home-icon" style={{background:"#e8f2fb"}}>🛵</div>
             <div>
               <div className="home-card-title">Delivery ou Retirada</div>
-              <div className="home-card-sub">Peça pelo cardápio e receba em casa ou retire na pizzaria</div>
+              <div className="home-card-sub">Peça pelo cardápio e receba em casa ou retire na pizzaria · 🎉 Grátis até 3 km</div>
             </div>
             <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
           </div>
@@ -947,7 +946,7 @@ export default function LaCelesteApp() {
                         <div className="frete-ok" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                           <div>
                             <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>📍 {endereco}</div>
-                            <div style={{fontSize:12,color:"#047857",marginTop:4}}>~{distanciaInfo.km} km · Taxa: <strong>{fmt(distanciaInfo.faixa.taxa)}</strong></div>
+                            <div style={{fontSize:12,color:"#047857",marginTop:4}}>~{distanciaInfo.km} km · Taxa: <strong>{distanciaInfo.faixa.taxa === 0 ? "🎉 Grátis!" : fmt(distanciaInfo.faixa.taxa)}</strong></div>
                           </div>
                           <button style={{fontSize:12,color:"#4a90c4",fontWeight:700,cursor:"pointer",marginLeft:12,flexShrink:0}} onClick={()=>{setEndereco("");setDistanciaInfo(null);setSugestoes([]);setErroEnd("");setRuaSelecionada(null);setEndNumero("");}}>Trocar</button>
                         </div>
@@ -1034,7 +1033,7 @@ export default function LaCelesteApp() {
                 <div className="section-card" style={{marginTop:12}}>
                   <div className="sub-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
                   {tipoEntrega==="entrega"&&distanciaInfo?.faixa?.taxa!=null&&(
-                    <div className="sub-row"><span>Taxa de entrega</span><span>{fmt(distanciaInfo.faixa.taxa)}</span></div>
+                    <div className="sub-row"><span>Taxa de entrega</span><span style={{color:distanciaInfo.faixa.taxa===0?"#065f46":"inherit",fontWeight:distanciaInfo.faixa.taxa===0?800:400}}>{distanciaInfo.faixa.taxa===0?"🎉 Grátis":fmt(distanciaInfo.faixa.taxa)}</span></div>
                   )}
                   <hr className="divider"/>
                   <div className="total-row"><span>Total</span><span style={{color:"#4a90c4"}}>{fmt(tipoEntrega==="retirada"?subtotal:subtotal+(distanciaInfo?.faixa?.taxa||0))}</span></div>
@@ -1076,7 +1075,7 @@ export default function LaCelesteApp() {
               {pagamento==="dinheiro"&&<input className="input" placeholder="Troco para quanto? (ex: 100)" value={troco} onChange={e=>setTroco(e.target.value)} style={{marginTop:10}} inputMode="numeric"/>}
               <div className="section-card" style={{marginTop:16}}>
                 <div className="sub-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
-                {tipoEntrega==="entrega"&&distanciaInfo?.faixa?.taxa!=null&&<div className="sub-row"><span>Taxa de entrega</span><span>{fmt(distanciaInfo.faixa.taxa)}</span></div>}
+                {tipoEntrega==="entrega"&&distanciaInfo?.faixa?.taxa!=null&&<div className="sub-row"><span>Taxa de entrega</span><span style={{color:distanciaInfo.faixa.taxa===0?"#065f46":"inherit",fontWeight:distanciaInfo.faixa.taxa===0?800:400}}>{distanciaInfo.faixa.taxa===0?"🎉 Grátis":fmt(distanciaInfo.faixa.taxa)}</span></div>}
                 <hr className="divider"/>
                 <div className="total-row"><span>Total</span><span style={{color:"#4a90c4"}}>{fmt(total)}</span></div>
               </div>
