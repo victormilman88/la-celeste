@@ -112,7 +112,6 @@ const MENU = {
 };
 
 const CATEGORIAS_CARDAPIO = [
-  { key: "combos",    label: "🎁 Combos" },
   { key: "pizzas",    label: "🍕 Pizzas" },
   { key: "aguas",     label: "🥤 Bebidas" },
   { key: "cervejas",  label: "🍺 Cervejas" },
@@ -131,7 +130,7 @@ let nextId = 1;
 export default function LaCelesteApp() {
   // App mode: home | delivery | local | eventos | painel
   const [appMode, setAppMode] = useState("home");
-  const [categoria, setCategoria] = useState("combos");
+  const [categoria, setCategoria] = useState("pizzas");
   const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
   const [toast, setToast] = useState(null);
@@ -550,7 +549,7 @@ export default function LaCelesteApp() {
             <div style={{fontSize:14,color:"#7a9ab5",marginTop:6}}>Como podemos te atender hoje?</div>
           </div>
 
-          <div className="home-card" onClick={() => { setAppMode("delivery"); setCategoria("combos"); }}>
+          <div className="home-card" onClick={() => { setAppMode("delivery"); setCategoria("pizzas"); }}>
             <div className="home-icon" style={{background:"#e8f2fb"}}>🛵</div>
             <div>
               <div className="home-card-title">Delivery ou Retirada</div>
@@ -559,7 +558,7 @@ export default function LaCelesteApp() {
             <div style={{color:"#c5dff0",fontSize:20,marginLeft:"auto"}}>›</div>
           </div>
 
-          <div className="home-card" onClick={() => { setAppMode("local"); setCategoria("combos"); }}>
+          <div className="home-card" onClick={() => { setAppMode("local"); setCategoria("pizzas"); }}>
             <div className="home-icon" style={{background:"#fff8e1"}}>🪑</div>
             <div>
               <div className="home-card-title">Consumo Local</div>
