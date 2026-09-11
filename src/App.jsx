@@ -339,7 +339,15 @@ export default function LaCelesteApp() {
   const evAdultosN = parseInt(evAdultos) || 0;
   const evMeiasN = parseInt(evMeias) || 0;
   const evCortesiaN = parseInt(evCortesia) || 0;
-  const evTotal = evAdultosN * 50 + evMeiasN * 25 + 200; // +taxa transporte
+
+  // Calcular faixa de preço baseado no número de adultos
+  function getFaixaEvento(n) {
+    if (n >= 50) return { preco: 50, taxa: 500, label: "a partir de 50" };
+    if (n >= 25) return { preco: 55, taxa: 300, label: "a partir de 25" };
+    return { preco: 60, taxa: 200, label: "a partir de 15" };
+  }
+  const faixaEv = getFaixaEvento(evAdultosN);
+  const evTotal = evAdultosN * faixaEv.preco + evMeiasN * 30 + faixaEv.taxa;
   const evTotalPessoas = evAdultosN + evMeiasN + evCortesiaN;
 
   function enviarEvento() {
@@ -349,11 +357,11 @@ export default function LaCelesteApp() {
     msg += "📅 *Data do evento:* " + evData + "\n";
     msg += "📍 *Local:* " + (evLocal || "A definir") + "\n\n";
     msg += "👥 *Participantes:*\n";
-    msg += "• Adultos (acima de 13 anos): " + evAdultosN + " × R$ 50 = " + fmt(evAdultosN * 50) + "\n";
-    msg += "• Crianças 6-12 anos: " + evMeiasN + " × R$ 25 = " + fmt(evMeiasN * 25) + "\n";
-    msg += "• Até 5 anos (cortesia): " + evCortesiaN + "\n";
+    msg += "• Adultos (" + faixaEv.label + "): " + evAdultosN + " × R$ " + faixaEv.preco + " = " + fmt(evAdultosN * faixaEv.preco) + "\n";
+    msg += "• Crianças 6-11 anos: " + evMeiasN + " × R$ 30 = " + fmt(evMeiasN * 30) + "\n";
+    msg += "• Menores de 6 anos (cortesia): " + evCortesiaN + "\n";
     msg += "• Total de pessoas: " + evTotalPessoas + "\n\n";
-    msg += "🚗 *Taxa de serviço/transporte:* R$ 200,00\n";
+    msg += "🚗 *Taxa de serviço/transporte:* " + fmt(faixaEv.taxa) + "\n";
     msg += "💰 *Estimativa total:* " + fmt(evTotal) + "\n";
     if (evObs) msg += "\n📝 *Observações:* " + evObs + "\n";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
@@ -369,7 +377,7 @@ export default function LaCelesteApp() {
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
   const hoje = new Date().toISOString().split('T')[0];
-  const canEvento = evNome && evTel && evData && evData >= hoje && evLocal && evAdultosN >= 25;
+  const canEvento = evNome && evTel && evData && evData >= hoje && evLocal && evAdultosN >= 15;
 
   // Render sections for pizza menu
   function renderMenuSection(items) {
@@ -745,15 +753,15 @@ export default function LaCelesteApp() {
               <div style={{flex:1}}>
                 <label className="field-label">Adultos (13+)<span className="obrigatorio">*</span></label>
                 <input className="input" type="number" placeholder="0" min="0" value={evAdultos} onChange={e=>setEvAdultos(e.target.value)} inputMode="numeric"/>
-                <div style={{fontSize:11,color:"#7a9ab5",marginTop:3}}>R$ 50 por pessoa</div>
+                <div style={{fontSize:11,color:"#7a9ab5",marginTop:3}}>R$ 60/pessoa (15+) · R$ 55 (25+) · R$ 50 (50+)</div>
               </div>
               <div style={{flex:1}}>
-                <label className="field-label">Crianças (6–12)</label>
+                <label className="field-label">Crianças (6–11)</label>
                 <input className="input" type="number" placeholder="0" min="0" value={evMeias} onChange={e=>setEvMeias(e.target.value)} inputMode="numeric"/>
-                <div style={{fontSize:11,color:"#7a9ab5",marginTop:3}}>R$ 25 por criança</div>
+                <div style={{fontSize:11,color:"#7a9ab5",marginTop:3}}>R$ 30 por criança</div>
               </div>
               <div style={{flex:1}}>
-                <label className="field-label">Até 5 anos</label>
+                <label className="field-label">Menores de 6 anos</label>
                 <input className="input" type="number" placeholder="0" min="0" value={evCortesia} onChange={e=>setEvCortesia(e.target.value)} inputMode="numeric"/>
                 <div style={{fontSize:11,color:"#4a90c4",marginTop:3,fontWeight:700}}>Cortesia ✓</div>
               </div>
@@ -763,13 +771,16 @@ export default function LaCelesteApp() {
             {(evAdultosN > 0 || evMeiasN > 0) && (
               <div className="ev-calc">
                 <div style={{fontSize:12,fontWeight:800,color:"#1a3a5c",marginBottom:10,textTransform:"uppercase",letterSpacing:1}}>Estimativa de valor</div>
-                {evAdultosN>0&&<div className="ev-row"><span>{evAdultosN} adulto{evAdultosN>1?"s":""} × R$ 50</span><span style={{fontWeight:700}}>{fmt(evAdultosN*50)}</span></div>}
-                {evMeiasN>0&&<div className="ev-row"><span>{evMeiasN} criança{evMeiasN>1?"s":""} × R$ 25</span><span style={{fontWeight:700}}>{fmt(evMeiasN*25)}</span></div>}
-                {evCortesiaN>0&&<div className="ev-row"><span>{evCortesiaN} criança{evCortesiaN>1?"s":""} (cortesia)</span><span style={{fontWeight:700,color:"#4a90c4"}}>Grátis</span></div>}
-                <div className="ev-row"><span>Taxa de serviço/transporte (Pelotas)</span><span style={{fontWeight:700}}>R$ 200,00</span></div>
+                <div style={{fontSize:12,color:"#4a90c4",fontWeight:700,marginBottom:8,background:"#f0f6fc",borderRadius:8,padding:"6px 10px"}}>
+                  {evAdultosN >= 50 ? "Faixa: 50+ adultos · R$ 50/pessoa + R$ 500 serviço" : evAdultosN >= 25 ? "Faixa: 25–49 adultos · R$ 55/pessoa + R$ 300 serviço" : "Faixa: 15–24 adultos · R$ 60/pessoa + R$ 200 serviço"}
+                </div>
+                {evAdultosN>0&&<div className="ev-row"><span>{evAdultosN} adulto{evAdultosN>1?"s":""} × R$ {faixaEv.preco}</span><span style={{fontWeight:700}}>{fmt(evAdultosN*faixaEv.preco)}</span></div>}
+                {evMeiasN>0&&<div className="ev-row"><span>{evMeiasN} criança{evMeiasN>1?"s":""} (6-11 anos) × R$ 30</span><span style={{fontWeight:700}}>{fmt(evMeiasN*30)}</span></div>}
+                {evCortesiaN>0&&<div className="ev-row"><span>{evCortesiaN} menor{evCortesiaN>1?"es":""} de 6 anos (cortesia)</span><span style={{fontWeight:700,color:"#4a90c4"}}>Grátis</span></div>}
+                <div className="ev-row"><span>Taxa de serviço/transporte</span><span style={{fontWeight:700}}>{fmt(faixaEv.taxa)}</span></div>
                 <div className="ev-total"><span>Total estimado</span><span style={{color:"#4a90c4"}}>{fmt(evTotal)}</span></div>
-                {evAdultosN < 25 && <div className="ev-warn">⚠️ Mínimo de 25 adultos para realizar o evento</div>}
-                {evAdultosN >= 25 && <div style={{fontSize:12,color:"#065f46",fontWeight:700,marginTop:6}}>✓ {evTotalPessoas} pessoa{evTotalPessoas>1?"s":""} no total</div>}
+                {evAdultosN < 15 && evAdultosN > 0 && <div className="ev-warn">⚠️ Mínimo de 15 adultos para realizar o evento</div>}
+                {evAdultosN >= 15 && <div style={{fontSize:12,color:"#065f46",fontWeight:700,marginTop:6}}>✓ {evTotalPessoas} pessoa{evTotalPessoas>1?"s":""} no total</div>}
               </div>
             )}
           </div>
@@ -782,8 +793,8 @@ export default function LaCelesteApp() {
           <button className="btn-wpp" style={{marginTop:16}} disabled={!canEvento} onClick={enviarEvento}>
             📲 Enviar solicitação via WhatsApp
           </button>
-          {!canEvento && evAdultosN > 0 && evAdultosN < 25 && (
-            <div style={{fontSize:12,color:"#e63946",textAlign:"center",marginTop:8}}>Mínimo de 25 adultos para realizar o evento</div>
+          {!canEvento && evAdultosN > 0 && evAdultosN < 15 && (
+            <div style={{fontSize:12,color:"#e63946",textAlign:"center",marginTop:8}}>Mínimo de 15 adultos para realizar o evento</div>
           )}
           {!canEvento && (!evNome||!evTel||!evData) && (
             <div style={{fontSize:12,color:"#7a9ab5",textAlign:"center",marginTop:8}}>Preencha todos os campos obrigatórios</div>
