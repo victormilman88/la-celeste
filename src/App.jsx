@@ -76,16 +76,16 @@ const MENU = {
     { id: 17, nome: "Chocolate branco c/ MM's",              desc: "Chocolate branco e confeito MM's", preco: 36, secao: "Doces" },
   ],
   congeladas: [
-    { id: 14, nome: "Marguerita",       desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
-    { id: 15, nome: "Calabresa",        desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
-    { id: 16, nome: "Pepperoni",        desc: "Pizza congelada individual", preco: 32, secao: "Clássicas" },
-    { id: 17, nome: "5 Queijos",        desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
-    { id: 18, nome: "Alcatra c/ gorgonzola", desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
-    { id: 19, nome: "4 Queijos c/ alcatra", desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
-    { id: 20, nome: "Vazio c/ cebola caramelizada", desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
-    { id: 21, nome: "Entrecot c/ chimichurri", desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
-    { id: 22, nome: "Chocolate branco c/ castanha", desc: "Pizza doce congelada individual", preco: 30, secao: "Doces" },
-    { id: 23, nome: "Doce de leite Conaprole", desc: "Pizza doce congelada individual", preco: 30, secao: "Doces" },
+    { id: 101, nome: "Marguerita",                       desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
+    { id: 102, nome: "Calabresa",                        desc: "Pizza congelada individual", preco: 28, secao: "Clássicas" },
+    { id: 103, nome: "Pepperoni",                        desc: "Pizza congelada individual", preco: 32, secao: "Clássicas" },
+    { id: 104, nome: "5 Queijos",                        desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
+    { id: 105, nome: "Alcatra c/ gorgonzola",            desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
+    { id: 106, nome: "4 Queijos c/ alcatra",             desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
+    { id: 107, nome: "Vazio c/ cebola caramelizada",     desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
+    { id: 108, nome: "Entrecot c/ chimichurri",          desc: "Pizza congelada individual", preco: 35, secao: "Especiais" },
+    { id: 109, nome: "Chocolate branco c/ castanha",     desc: "Pizza doce congelada individual", preco: 30, secao: "Doces" },
+    { id: 110, nome: "Doce de leite Conaprole",          desc: "Pizza doce congelada individual", preco: 30, secao: "Doces" },
   ],
   cervejas: [
     { id: 30, nome: "Heineken",           desc: "Long neck", preco: 13 },
@@ -287,7 +287,7 @@ export default function LaCelesteApp() {
     msg += "📱 *WhatsApp:* " + clienteTel + "\n\n";
     msg += "🍕 *Itens:*\n";
     cart.forEach(c => {
-      const isCongelada = c.item.id >= 14 && c.item.id <= 23;
+      const isCongelada = c.item.id >= 101 && c.item.id <= 110;
       if (c.item.isCombo) {
         msg += "• 🎁 Combo La Celeste — " + fmt(c.item.preco * c.qty) + "\n";
         msg += "   🍕 Calabresa + Marguerita\n";
