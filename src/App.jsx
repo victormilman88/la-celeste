@@ -55,6 +55,22 @@ function msgAgendamento() {
   return null;
 }
 
+// Dia da semana em que o pedido será realmente atendido (0=dom ... 6=sab).
+// Fechado seg; após 23h o pedido vai para o próximo dia de abertura.
+function diaDoAtendimento() {
+  const now = new Date();
+  const dia = now.getDay();
+  const hora = now.getHours() + now.getMinutes() / 60;
+  let d = hora >= 23 ? (dia + 1) % 7 : dia;
+  if (d === 1) d = 2; // segunda fechado -> terça
+  return d;
+}
+
+// Quartas (3) e quintas (4): rodízio -> somente retirada, sem entrega
+function entregaBloqueada() {
+  return [3, 4].includes(diaDoAtendimento());
+}
+
 const MENU = {
   pizzas: [
     // Salgadas
@@ -373,7 +389,8 @@ export default function LaCelesteApp() {
   const done = orders.filter(o => o.status === "entregue");
 
   const canDeliveryStep1 = clienteNome.trim().length > 1 && clienteTel.replace(/\D/g,"").length >= 10;
-  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && distanciaInfo && distanciaInfo.faixa.taxa !== null);
+  const semEntregaHoje = entregaBloqueada();
+  const canDeliveryStep2 = tipoEntrega === "retirada" || (tipoEntrega === "entrega" && !semEntregaHoje && distanciaInfo && distanciaInfo.faixa.taxa !== null);
   const canDeliveryStep3 = !!pagamento;
   const canLocal = localNome.trim() && localMesa.trim() && localPag && cart.length > 0;
   const hoje = new Date().toISOString().split('T')[0];
@@ -600,6 +617,7 @@ export default function LaCelesteApp() {
               <div style={{fontWeight:700,fontSize:14,color:"#1a3a5c",marginBottom:2}}>Horário de funcionamento</div>
               <div style={{fontSize:13,color:"#7a9ab5"}}>Terça a domingo · 18h30 às 23h00</div>
               <div style={{fontSize:12,color:"#4a90c4",marginTop:2,fontWeight:600}}>Pedidos fora do horário são agendados para a próxima abertura ✓</div>
+              <div style={{fontSize:12,color:"#c0392b",marginTop:2,fontWeight:600}}>🍕 Quartas e quintas (rodízio): apenas retirada, sem entrega</div>
             </div>
           </div>
         </div>
@@ -936,15 +954,19 @@ export default function LaCelesteApp() {
                   <div style={{fontSize:12,color:"#7a9ab5"}}>Grátis · Av. JK, 4165 · Pronto em 15–20 min</div>
                 </div>
               </div>
-              <div className={"radio-option"+(tipoEntrega==="entrega"?" selected":"")} onClick={()=>setTipoEntrega("entrega")}>
+              <div className={"radio-option"+(tipoEntrega==="entrega"&&!semEntregaHoje?" selected":"")}
+                style={semEntregaHoje?{opacity:0.5,cursor:"not-allowed"}:undefined}
+                onClick={()=>{ if(!semEntregaHoje) setTipoEntrega("entrega"); }}>
                 <div className="radio-dot"><div className="radio-dot-inner"/></div>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:800,fontSize:14}}>🚗 Entrega em domicílio</div>
-                  <div style={{fontSize:12,color:"#7a9ab5"}}>Taxa calculada pela distância · até 13 km</div>
+                  {semEntregaHoje
+                    ? <div style={{fontSize:12,color:"#c0392b",fontWeight:700}}>Indisponível às quartas e quintas (dias de rodízio) · apenas retirada</div>
+                    : <div style={{fontSize:12,color:"#7a9ab5"}}>Taxa calculada pela distância · até 13 km</div>}
                 </div>
               </div>
 
-              {tipoEntrega==="entrega"&&(
+              {tipoEntrega==="entrega"&&!semEntregaHoje&&(
                 <div className="section-card" style={{marginTop:12}}>
                   <div className="section-label">Endereço de entrega</div>
                   {distanciaInfo&&!calculando?(
